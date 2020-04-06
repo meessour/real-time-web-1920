@@ -1,0 +1,28 @@
+{
+  "name": "real-time-web-1920",
+  "version": "1.0.0",
+  "description": "Dit project is een simpele real-time chat app. Er is één main chat aanwezig waar meerdere mensen in kunnen zitten. Wat deze chat-app uniek maakt is dat er een reputatie systeem aanwezig is. Er wordt gefilterd op buitengewoon taalgebruik zodat iedereen zich veilig en op zijn gemak kan voelen. De filter vervangt de \"bad words\" met allemaal tekentjes, net zoals in stripboeken. Naarmate een persoon vaker deze \"bad words\" in de chat zegt, bouwt diegene een steeds slechtere reputatie op. De reputatie wordt aangeduidt door middel van de kleur van de naam van de gebruiker. Hoe intenser de kleur rood is, hoe slechter de reputatie van die persoon is. Als de reputatie neutraal is, is de kleur rood niet aanwezig.",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "ejs": "^3.0.2",
+    "express": "^4.17.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meessour/real-time-web-1920.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meessour/real-time-web-1920/issues"
+  },
+  "homepage": "https://github.com/meessour/real-time-web-1920#readme"
+}
