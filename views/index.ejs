@@ -1,0 +1,24 @@
+<%- include ("./partials/head.ejs") %>
+
+<div class="main-content">
+    <div class="chat-wrapper">
+        <h1>Safe Space Chat :)</h1>
+
+        <div class="username-input-container">
+            <h3 class="username-input-context">What can we call you?</h3>
+            <input id="username" placeholder="Name"></input>
+            <button id="set_username">Start chatting!</button>
+        </div>
+
+        <div class="chat-main-wrapper">
+            <div id="messages-container">
+            </div>
+            <div id="message-input-container">
+                <input id="message" placeholder="Message"></input>
+                <button id="send">Send</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include ("./partials/footer.ejs") %>

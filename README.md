@@ -6,12 +6,14 @@ Dit project is een simpele real-time chat app. Er is één main chat aanwezig wa
 
 [Live Demo](#)
 
+![Image](./docs/img/chrome_ds7Olw3b10.png)
+
 <details>
 <summary>Hoe krijg je de app lokaal draaiende?</summary>
 
 **Stap 1:** Clone project:
 ```git
-git clone https://github.com/meessour/progressive-web-apps-1920.git
+git clone https://github.com/meessour/real-time-web-1920.git
 ```
 
 **Stap 2:** Ga naar de root van je project folder via `cd`
@@ -29,5 +31,5 @@ npm install
 npm start
 ```
 
-**Stap 5:** Open je browser en navigeer naar je localhost
+**Stap 5:** Open je browser en navigeer naar http://localhost:1337/
 </details>
