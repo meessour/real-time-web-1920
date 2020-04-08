@@ -52,14 +52,13 @@ body {
     flex-direction: row;
 }
 
-.message-name {
+.chat-message, .server-message {
     margin: 0 8px 0 0;
 }
 
-.message-message {
-    margin: 0;
+.server-message {
+    color: #fbff57;
 }
-
 
 .username-input-context {
     white-space: nowrap;

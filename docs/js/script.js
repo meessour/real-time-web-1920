@@ -3,50 +3,50 @@ let username;
 
 $(() => {
     $("#set_username").click(() => {
-        const usernameInput = $("#username").val().trim()
-        if (usernameInput.length) {
-            console.log("ja boy", usernameInput);
-
-            username = usernameInput;
-
-            $(".username-input-container").css("display", "none");
-            $(".chat-main-wrapper").css("visibility", "visible");
+        const usernameInput = $("#username").val().trim();
+        if (usernameInput) {
+            setUserName(usernameInput);
         }
-
     });
+
     $("#send").click(() => {
-        const messageContent = $("#message").val().trim();
+        const message = $("#message").val().trim();
 
-        if (messageContent && username) {
-            $("#message").val("");
-            const message = {name: username, message: messageContent};
-            postMessage(message)
+        if (message) {
+            sendMessage(message)
         }
     });
-    getMessages()
-});
 
-socket.on('message', addMessage)
-
-function addMessage(message) {
-    const html = `
+    socket.on('user message', function (message) {
+        const html = `
     <div class="message">
-        <h4 class="message-name">${message.name}:</h4> 
-        <p class="message-message">${message.message}</p>
+        <p class="chat-message">${message}</p>
     </div>
         `;
 
-    $("#messages-container").append(html)
-}
+        $("#messages-container").append(html)
+    });
 
-function getMessages() {
-    $.get(window.location.origin + "/messages", (data) => {
-        console.log("load hem boy", data)
+    socket.on('server message', function (message) {
+        const html = `
+    <div class="message">
+        <p class="server-message">${message}</p>
+    </div>
+        `;
 
-        data.forEach(addMessage);
-    })
-}
+        $("#messages-container").append(html)
+    });
 
-function postMessage(message) {
-    $.post(window.location.origin + "/message", message)
-}
+    function setUserName(userName) {
+        socket.emit('set username', userName);
+
+        $(".username-input-container").css("display", "none");
+        $(".chat-main-wrapper").css("visibility", "visible");
+    }
+
+    function sendMessage(message) {
+        socket.emit('user message', message);
+
+        $("#message").val("");
+    }
+});
