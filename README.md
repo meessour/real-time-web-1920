@@ -1,10 +1,13 @@
+<details>
+<summary>Safe Space Chat - Week 1</summary>
+
 # Safe Space Chat
 Let me introduce you to Safe Space Chat! This is a single-room chat app, but with a catch. This chat app has a reputation system based on the amount of bad words a user uses. The reputation of a user is indicated by the intensity of the color red in their username.
 
 <details>
 <summary>Click here to see an example</summary>
 
-![Image](./docs/img/chrome_R2JSHfo7PP.png)
+![Image](docs/img/week-1-readme/chrome_R2JSHfo7PP.png)
 
 </details>
 
@@ -13,38 +16,7 @@ Let me introduce you to Safe Space Chat! This is a single-room chat app, but wit
 
 [Live Demo](https://safe-space-chat.herokuapp.com/)
 
-![Image](./docs/img/chrome_ds7Olw3b10.png)
-
-## Table of Contents
-1. [How to install](#how-to-install)
-2. [But why?](#but-why?)
-3. [How does it work](#how-does-it-work)
-    3.1 [Username](#Username)
-    3.2 [Chatroom](#Chatroom)
-
-## How to install
-
-**Step 1:** Clone project:
-```git
-git clone https://github.com/meessour/real-time-web-1920.git
-```
-
-**Step 2:** Navigate to the project's root using: `cd`
-```git
-cd C:/../..
-```
-
-**Step 3:** Install dependencies:
-```git
-npm install
-```
-
-**Step 4:** Start the server:
-```git
-npm start
-```
-
-**Step 5:** Open browser and navigate to: http://localhost:1337/
+![Image](docs/img/week-1-readme/chrome_ds7Olw3b10.png)
 
 ## But why?
 
@@ -54,7 +26,7 @@ The world has to much hatred and we need more love and peace, or something like 
 
 When the user navigates to the website, he or she is asked to enter a (user)name
 
-![Image](./docs/img/chrome_7AqSu0ABDK.png)
+![Image](docs/img/week-1-readme/chrome_7AqSu0ABDK.png)
 
 Once the user has entered a username, it is saved on the user's socket on the server:
 ```javascript
@@ -73,7 +45,7 @@ socket.broadcast.emit('server message', `<b>${socket.userName}</b> joined the ch
 ```
 Here is what it looks like:
 
-![Image](./docs/img/chrome_17YxVODBiE.png)
+![Image](docs/img/week-1-readme/chrome_17YxVODBiE.png)
 
 Here is how to client checks whether a username is valid:
 
@@ -100,14 +72,14 @@ function setUserName(userName) {
 <details>
 <summary>username-input container</summary>
 
-![Image](./docs/img/chrome_7AqSu0ABDK.png)
+![Image](docs/img/week-1-readme/chrome_7AqSu0ABDK.png)
 
 </details>
 
 <details>
 <summary>chat-room</summary>
 
-![Image](./docs/img/chrome_3etr9ByVkw.png)
+![Image](docs/img/week-1-readme/chrome_3etr9ByVkw.png)
 
 </details>
 
@@ -135,7 +107,7 @@ if (containsBadWord(message)) {
 
 The number representing the reputation is equal to the lightness of the color red of the username. The color is pure white when this value is 100. The color red is the most bright when the value is 50. At value 0 the color is black:
 
-![Image](./docs/img/chrome_SnQrGJkcdK.png)
+![Image](docs/img/week-1-readme/chrome_SnQrGJkcdK.png)
 
 The color is set using the HSL color value. The Hue (h) value is set to either 0 or 360, this represents the color red on the color spectrum. The Saturation (s) is set to 100% to get the most intense color possible. 
 
@@ -162,3 +134,59 @@ function containsBadWord(message) {
 ```
 
 There is a long array with all the bad words and a check if the message contains any of the bad words.
+
+</details>
+
+# Spotify Collaborative Playlist Maker
+
+![Image](./docs/img/overview.png)
+
+## Demo's
+
+[Live Demo]()
+
+## Table of Contents
+1. [How to install](#How-to-install)
+2. [Data lifecycle](#Data-lifecycle)
+3. [Dataflow](#Dataflow)
+4. [How does it work](#How-does-it-work)
+5. [Wishlist](#Wishlist)
+6. [License](#License)
+
+## How to install
+**Step 1:** Clone project:
+```git
+git clone https://github.com/meessour/real-time-web-1920.git
+```
+
+**Step 2:** CD to path of the project's root:
+```git
+cd C:/../..
+```
+
+**Step 3:** Install packages:
+```git
+npm install
+```
+
+**Step 4:** Start the server:
+```git
+npm start
+```
+
+**Step 5:** Navigate to the localhost in browser
+
+## Data lifecycle
+![Image](docs/img/final-app-readme/data-lifecycle.png)
+
+## Dataflow
+![Image](docs/img/final-app-readme/dataflow.png)
+
+## How does it work?
+
+
+## Wishlist
+* Being able to save playlist on Spotify
+
+## License
+This repository is licensed as [MIT](LICENSE) @ [Mees Sour](https://github.com/meessour).
