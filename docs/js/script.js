@@ -1,5 +1,4 @@
 const socket = io();
-let username;
 
 $(() => {
     $("#set_username").click(() => {
