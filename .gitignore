@@ -1,3 +1,6 @@
 .idea
 .jshintrc
 /node_modules/
+/collaborative-playlist-maker/package-lock.json
+/collaborative-playlist-maker/node_modules/
+package-lock.json

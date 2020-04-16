@@ -1,0 +1,33 @@
+{
+  "name": "collaborative-playlist-maker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+    "body-parser": "latest",
+    "ejs": "^3.0.2",
+    "express": "^4.17.1",
+    "express-sslify": "^1.2.0",
+    "mongodb": "^3.5.5",
+    "mongoose": "^5.9.7",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meessour/real-time-web-1920.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/meessour/real-time-web-1920/issues"
+  },
+  "homepage": "https://github.com/meessour/real-time-web-1920#readme"
+}

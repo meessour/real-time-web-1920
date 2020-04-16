@@ -1,0 +1,21 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    /* fallback for old browsers */
+    background: #283c86;
+    /* Chrome 10-25, Safari 5.1-6 */
+    background: -webkit-linear-gradient(90deg, #38efa6, #155799);
+    /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    background: linear-gradient(0deg, #38efa6, #155799);
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+
+    /*Standard text color is white*/
+    color: #fff;
+
+    font-family: Montserrat, Arial, sans-serif;
+}
