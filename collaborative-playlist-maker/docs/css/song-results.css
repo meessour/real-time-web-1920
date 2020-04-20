@@ -1,0 +1,55 @@
+.song-album-cover {
+    width: auto;
+    height: 100%;
+    border-radius: 4px;
+    margin-right: 12px;
+}
+
+.song-listens-container {
+    display: flex;
+    height: 24px;
+    margin-top: 4px;
+    align-items: center;
+}
+
+.followers-icon {
+    width: auto;
+    height: 100%;
+    margin: 0 8px 0 0;
+}
+
+.song-name,
+.song-listens {
+    margin: 0;
+    color: var(--black);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 360px;
+    text-align: left;
+}
+
+
+.song-listens {
+    margin: 0;
+    color: var(--black);
+}
+
+.artist-item {
+    text-decoration: none;
+    align-items: center;
+    display: flex;
+    height: 72px;
+    max-height: 72px;
+    padding: 12px 8px 12px 12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
+}
+
+.song-info-container {
+    align-content: space-between;
+    height: 100%;
+    overflow: hidden;
+}

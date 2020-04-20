@@ -1,5 +1,43 @@
 <%- include ("./partials/head.ejs") %>
 
-<a id="button">Send</a>
+<div class="main-content centered">
+    <div id="group-buttons-container">
+        <h1 class="title">Create collaborative playlist using Spotify's library</h1>
+        <a id="create-group">Create a group</a>
+        <a id="join-group">Join a group</a>
+    </div>
+
+    <div id="enter-name-container">
+        <h1 class="title"><label for="search-song-input">What can people call you?</label></h1>
+        <input id="set-name-input" type="text" placeholder="Enter a name...">
+        <a id="submit-name">Submit</a>
+    </div>
+
+    <div id="main-content-container">
+        <div id="group-info-container">
+            <p id="group-id-text">GroupID: <b>00000</b></p>
+            <a id="leave-group">Leave Group</a>
+            <p id="people-list-title">People in group:</p>
+            <div id="people-list-container">
+                <p class="person">Ricky</p>
+                <p class="person">Thomas Name</p>
+            </div>
+        </div>
+
+        <div id="playlist-maker-container">
+            <div id="search-container">
+                <input id="search-song-input" type="text" placeholder="Search for a song...">
+
+                <div id="songs-container">
+
+                </div>
+            </div>
+            <div id="playlist-container">
+
+            </div>
+        </div>
+    </div>
+
+</div>
 
 <%- include ("./partials/footer.ejs") %>

@@ -1,3 +1,12 @@
+:root {
+    /* Colors */
+    --black: #000;
+    --white: #fff;
+    --sky: #f0f2f0;
+
+    --dark: #363636;
+}
+
 html,
 body {
     height: 100%;
@@ -18,4 +27,156 @@ body {
     color: #fff;
 
     font-family: Montserrat, Arial, sans-serif;
+}
+
+input {
+    font-family: Montserrat, Arial, sans-serif;
+}
+
+.main-content {
+    color: var(--white);
+    width: 90%;
+    padding: 20px;
+}
+
+.centered {
+    text-align: center;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.title {
+    width: 100%;
+}
+
+#group-buttons-container,
+#enter-name-container,
+#group-info-container,
+#people-list-container,
+#playlist-maker-container {
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#join-group,
+#create-group,
+#submit-name,
+#leave-group,
+.person {
+    padding: 4px 8px;
+
+    background-color: var(--sky);
+    color: var(--black);
+
+    border: 2px solid var(--sky);
+    border-radius: 8px;
+}
+
+#create-group:hover,
+#join-group:hover,
+#submit-name:hover,
+#leave-group:hover {
+    cursor: pointer;
+}
+
+#join-group{
+    margin-left: 24px;
+}
+
+#search-song-input,
+#set-name-input {
+    padding: 12px 20px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    background-color: var(--sky);
+    border-radius: 8px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+#set-name-input {
+    width: 300px;
+    padding: 8px 12px;
+}
+
+#playlist-maker-container {
+    flex-direction: row;
+    margin-top: 24px;
+}
+
+#submit-name {
+    margin-left: 24px;
+}
+
+#group-info-container {
+    justify-content: space-between;
+}
+
+#group-id-text {
+    margin: 0;
+    align-self: center;
+}
+
+#people-list-container {
+    border: 1px solid var(--sky);
+    border-radius: 8px;
+    padding: 8px 0;
+    margin-top: 8px;
+    justify-content: left;
+}
+
+#playlist-container {
+    border: 1px solid var(--sky);
+    border-radius: 8px;
+    padding: 8px 0;
+}
+
+#people-list-title {
+    width: 100%;
+    margin: 8px 0 0 0;
+
+    text-align: start;
+}
+
+.person {
+    background-color: transparent;
+    color: var(--sky);
+    margin: 0;
+    margin-left: 8px;
+}
+
+#search-container {
+    flex: 2;
+    margin-right: 24px;
+}
+
+#playlist-container {
+    flex: 1;
+}
+#songs-container {
+    background-color: var(--sky);
+    border-radius: 8px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.song-item{
+    text-decoration: none;
+    align-items: center;
+    display: flex;
+    height: 72px;
+    max-height: 72px;
+    margin: 12px 8px 12px 12px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 100%;
+    white-space: nowrap;
 }
