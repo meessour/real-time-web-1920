@@ -1,13 +1,13 @@
-let socket = io();
-
-// init();
-
-function init() {
-    hideAllContainers();
-    showSelectGroup();
-}
-
 $(() => {
+    let socket = io();
+
+    init();
+
+    function init() {
+        hideAllContainers();
+        showSelectGroup();
+    }
+
     $("#create-group").click(() => {
         console.log("clicked create group")
 
@@ -54,7 +54,7 @@ $(() => {
         }
     });
 
-    socket.on('song results', function (songs) {
+    socket.on('track results', function (songs) {
         const songListHtml = generateSongListHtml(songs)
 
         appendSongsHtml(songListHtml)
@@ -65,44 +65,44 @@ $(() => {
     }
 
     function generateSongListHtml(songs) {
-        let html = ""
-        console.log("songs", songs)
+        let html = "";
+        console.log("songs", songs);
         for (let i = 0; i < songs.length; i++) {
             const song = songs[i];
 
+            const songName = song.name || "";
+            const songAlbumCover = song.album || "/icons/account_box-24px.svg";
+            const songDuration = song.duration_ms || "";
+
             html += `<div class="song-item">
                            <img class="song-album-cover" 
-                           src=${song.album && song.album.images[0] ?
-                song.album.images[(song.album.images.length - 1)].url
-                : "/icons/account_box-24px.svg"}>
+                           src=${songAlbumCover}>
                             <div class="song-info-container">
-                                <h4 class="song-name">${song.name || ""}</h4>
+                                <h4 class="song-name">${songName}</h4>
                                 <div class="song-listens-container">
-                                    <img class="song-listens-icon" src="/icons/group-24px.svg">
-                                    <p class="song-listens">listen amount</p>
+                                    <img class="song-listens-icon" src="/icons/watch_later-black.svg">
+                                    <p class="song-listens">${songDuration}</p>
                                 </div>
                             </div>
                         </div>`
         }
-
-        console.log("html?", html)
 
         return html
     }
 
     function showSelectGroup() {
         hideAllContainers();
-        $("#group-buttons-container").css("display", "flex");
+        $("#group-buttons-container").css("display", "block");
     }
 
     function showSetNameContainer() {
         hideAllContainers();
-        $("#enter-name-container").css("display", "flex");
+        $("#enter-name-container").css("display", "block");
     }
 
     function showMainContent() {
         hideAllContainers();
-        $("#main-content-container").css("display", "flex");
+        $("#main-content-container").css("display", "block");
     }
 
     function hideAllContainers() {

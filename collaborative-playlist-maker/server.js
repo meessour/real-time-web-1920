@@ -1,5 +1,7 @@
 const get = require('./docs/modules/get.js');
 
+require('dotenv').config();
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const enforce = require('express-sslify');
@@ -35,21 +37,27 @@ socketIo.on('connection', (socket) => {
     socket.userName = "user1"
 
     socket.on('search song', function (input) {
-        if (socket.userName) {
-            const songs = [{name: "first"}, {name: "2nsd"}]
+        if (socket.userName && input !== undefined && input.length) {
+            get.fetchToken().then(token => {
+                console.log("token:", token)
+                if (token.access_token) return token.access_token;
 
-            // searchSongs(input).then(data => {
-            //     console.log("results getSongs:", data)
-            //     return data;
-            // }).then(data => {
-            //     // socketIo.emit('song results', songs);
-            // }).catch(error => {
-            //     console.log("something went wrong:", error);
-            // });
-            //
-            get.fetchToken().then(data => {
-                console.log("results data.responseText:", data.status)
-                console.log("results data.responseText:", data.statusText)
+                throw "No access token was returned"
+            }).then(token => {
+                return get.searchSongs(token, input)
+            }).then(tracks => {
+                if (tracks && tracks.tracks && tracks.tracks.items) return tracks.tracks.items;
+                if (tracks && tracks.error) throw tracks.error.message;
+                console.log("tracks:", tracks.tracks.items);
+
+                throw "No tracks were returned"
+            }).then(tracks => {
+                const parsedTracks = get.parsedTracks(tracks);
+                console.log("parsedTracks:", parsedTracks);
+
+                if (!parsedTracks) throw "Couldn't parse tracks";
+
+                socketIo.emit('track results', parsedTracks);
             }).catch(error => {
                 console.log("something went wrong:", error);
             });
