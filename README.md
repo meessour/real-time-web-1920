@@ -4,7 +4,7 @@ With this app you can work together with friends to create a playlist together. 
 
 ## Demo's
 
-[Live Demo]()
+[Live Demo](https://collaborative-playlist-maker.herokuapp.com/)
 
 ## Table of Contents
 1. [How to install](#How-to-install)
