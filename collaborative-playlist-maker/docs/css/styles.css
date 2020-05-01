@@ -107,6 +107,13 @@ input {
     width: 100%;
 }
 
+#search-song-input:focus,
+#set-name-input:focus,
+#set-pin-input:focus {
+    outline: none;
+    box-shadow: 0 0 4px #0066ff;
+}
+
 #set-name-input {
     width: 300px;
     padding: 8px 12px;
@@ -206,5 +213,5 @@ input {
 }
 
 .error-border {
-    box-shadow: 0 0 0 4px red;
+    box-shadow: 0 0 0 4px red !important;
 }
