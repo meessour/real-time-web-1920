@@ -56,13 +56,12 @@ $(() => {
         const input = $("#search-song-input").val();
 
         // Check if input is not empty and user is online
-        if (input && input.trim() && navigator.onLine) {
-            console.log("emit song query")
-
-            socket.emit('search song', input);
+        if (input && input.trim()) {
+            searchTracks(input)
         } else {
             console.log("input was empty")
 
+            document.getElementById("search-song-input").classList.remove('error-border')
             // Clear search results list
             appendSongsHtml("")
         }
@@ -78,11 +77,7 @@ $(() => {
 
     function setUserName(name) {
         if (name) {
-            // If the user is not connected
-            if (!socket.connected) {
-                console.log("user reconnected!")
-                socket.connect();
-            }
+            checkIfSocketConnected();
 
             console.log("set username", name);
             socket.emit('set username', name, (response) => {
@@ -101,6 +96,7 @@ $(() => {
 
     function createNewRoom() {
         try {
+            checkIfSocketConnected();
             socket.emit('create room', (response) => {
                 // The response is the pin
                 if (response) {
@@ -121,6 +117,7 @@ $(() => {
     function joinRoom(roomPin) {
         try {
             if (roomPin) {
+                checkIfSocketConnected();
                 console.log("pin emit", roomPin)
                 socket.emit('join room', roomPin, (response) => {
                     console.log('response', response);
@@ -143,12 +140,37 @@ $(() => {
         }
     }
 
-    // On track results response
-    socket.on('track results', function (songs) {
-        const songListHtml = generateSongListHtml(songs)
+    // Checks if the socket is connected
+    function checkIfSocketConnected() {
+        // If the user is not connected
+        if (!socket.connected) {
+            socket.connect();
 
-        appendSongsHtml(songListHtml)
-    });
+            console.log("User reconnected")
+        }
+    }
+
+    function searchTracks(input){
+        checkIfSocketConnected();
+        socket.emit('search song', input, (response) => {
+            // The response are the songs as object
+            console.log("response", response);
+
+            if (response) {
+                document.getElementById("search-song-input").classList.remove('error-border');
+
+                // Generate the HTML used to show the list
+                const songListHtml = generateSongListHtml(response)
+
+                appendSongsHtml(songListHtml)
+            } else {
+                document.getElementById("search-song-input").classList.add('error-border');
+
+                // Clear search results list
+                appendSongsHtml("");
+            }
+        });
+    }
 
     // On user entering room
     socket.on('new user', function (userNameList) {
@@ -195,13 +217,7 @@ $(() => {
         return html
     }
 
-    // function addSongRequest(songTitle, songAlbumCover, songDuration) {
-    //     console.log("addSongRequest", songTitle, songAlbumCover, songDuration)
-    // }
-
-    let elementsArray = document.querySelectorAll("#songs-container");
-
-    elementsArray.forEach(function (elem) {
+    document.querySelectorAll("#songs-container").forEach(function (elem) {
         elem.addEventListener("click", function () {
             console.log("click", elem)
         });

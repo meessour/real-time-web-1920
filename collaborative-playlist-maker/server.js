@@ -111,16 +111,20 @@ socketIo.on('connection', (socket) => {
         }
     });
 
-    socket.on('search song', function (input) {
+    socket.on('search song', function (input, response) {
         if (socket.userName && input !== undefined && input.length) {
+            // Get or fetch a token
             Token.getToken().then(token => {
+                // Search for the tracks with the token and input
                 return Tracks.searchTracks(token, input)
             }).then(tracks => {
+                // Filter out unnecessary track data
                 const parsedTracks = Tracks.parseTracks(tracks);
 
-                socket.emit('track results', parsedTracks);
+                response(parsedTracks)
             }).catch(error => {
                 console.log("something went wrong:", error);
+                response();
             });
         }
     });
