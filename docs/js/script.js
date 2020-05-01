@@ -2,9 +2,16 @@ $(() => {
     let socket = io();
 
     init();
+    // initDev();
 
     function init() {
         showSetNameContainer();
+    }
+
+    function initDev() {
+        socket.emit('set username', "temp", (response) => {
+            console.log("temp name set,", response)
+        });
     }
 
     $("#create-group").click(() => {
@@ -63,7 +70,7 @@ $(() => {
 
             document.getElementById("search-song-input").classList.remove('error-border')
             // Clear search results list
-            appendSongsHtml("")
+            changeInnerHTML(document.getElementById("songs-container"))
         }
     });
 
@@ -150,7 +157,7 @@ $(() => {
         }
     }
 
-    function searchTracks(input){
+    function searchTracks(input) {
         checkIfSocketConnected();
         socket.emit('search song', input, (response) => {
             // The response are the songs as object
@@ -160,14 +167,15 @@ $(() => {
                 document.getElementById("search-song-input").classList.remove('error-border');
 
                 // Generate the HTML used to show the list
-                const songListHtml = generateSongListHtml(response)
+                const songListHtml = generateSongListHtml(response, true);
 
-                appendSongsHtml(songListHtml)
+                changeInnerHTML(document.getElementById("songs-container"), songListHtml);
+                setSongItemsListeners();
             } else {
                 document.getElementById("search-song-input").classList.add('error-border');
 
                 // Clear search results list
-                appendSongsHtml("");
+                changeInnerHTML(document.getElementById("songs-container"));
             }
         });
     }
@@ -187,21 +195,22 @@ $(() => {
         }
     });
 
-    function appendSongsHtml(songsHtml) {
-        document.getElementById("songs-container").innerHTML = songsHtml
+    function changeInnerHTML(element, html = '') {
+        element.innerHTML = html
     }
 
-    function generateSongListHtml(songs) {
-        let html = "";
+    function generateSongListHtml(songs, isSearchResult, previousHtml = '') {
+        let html = previousHtml;
         console.log("songs", songs);
         for (let i = 0; i < songs.length; i++) {
             const song = songs[i];
 
+            const songId = song.id || undefined;
             const songName = song.name || "";
             const songAlbumCover = song.album || "/icons/account_box-24px.svg";
             const songDuration = song.duration_ms || "";
 
-            html += `<a class="song-item">
+            html += `<a id="${songId}" class="song-item">
                            <img class="song-album-cover" 
                            src=${songAlbumCover}>
                             <div class="song-info-container">
@@ -217,11 +226,37 @@ $(() => {
         return html
     }
 
-    document.querySelectorAll("#songs-container").forEach(function (elem) {
-        elem.addEventListener("click", function () {
-            console.log("click", elem)
+    function setSongItemsListeners() {
+        // Sets an event listener for every track item in the search result container
+        document.getElementById("songs-container").querySelectorAll(".song-item").forEach(function (element) {
+            element.addEventListener("click", function () {
+                // Check if the element has an id
+                if (element && element.id) {
+                    requestSongAdd(element.id)
+                }
+            });
         });
-    });
+    }
+
+    function requestSongAdd(trackId) {
+        trackId = trackId.toString()
+
+        console.log("Request song add", trackId)
+        socket.emit('add song request', trackId, (response) => {
+            if (response) {
+                console.log("Request succesful added!")
+                const currentPlaylistHTML = getCurrentPlaylistHTML();
+                const playlistSongsHtml = generateSongListHtml(response, false, currentPlaylistHTML)
+                changeInnerHTML(document.getElementById("playlist-container"), playlistSongsHtml)
+            } else {
+                console.log("Something went wrong in requestSongAdd()")
+            }
+        });
+    }
+
+    function getCurrentPlaylistHTML() {
+        return document.getElementById("playlist-container").innerHTML
+    }
 
     function showSelectGroup() {
         hideAllContainers();

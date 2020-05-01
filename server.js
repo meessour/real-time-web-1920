@@ -129,22 +129,41 @@ socketIo.on('connection', (socket) => {
         }
     });
 
+    socket.on('add song request', function (trackId, response) {
+        // Only proceed if user has set their userName and a trackId is present
+        if (socket.userName && trackId !== undefined && trackId.length) {
+            // Get or fetch a token
+            Token.getToken().then(token => {
+                // Search for the tracks with the token and input
+                return Tracks.searchTrackById(token, trackId)
+            }).then(tracks => {
+                // Filter out unnecessary track data
+                const parsedTracks = Tracks.parseTracks(tracks);
+
+                // TODO: add track to pending
+
+                response(parsedTracks)
+            }).catch(error => {
+                console.log("something went wrong:", error);
+                response();
+            });
+        }
+    });
+
     socket.on('disconnecting', function () {
         // All rooms the user was/is in
         const groupPinList = Object.keys(socket.adapter.rooms);
         const socketId = socket.id
 
         console.log("disconnecting", groupPinList, socketId)
+        console.log(`${socket.id} (${socket.userName}) disconnected`);
+
 
         // Let the user leave every group he/she was in
         groupPinList.forEach(groupPin => leaveGroup(groupPin, socketId))
 
         // Reset the user's username
         socket.userName = undefined
-    });
-
-    socket.on('disconnect', function () {
-        console.log(`${socket.userName} disconnected`);
     });
 });
 
