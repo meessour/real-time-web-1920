@@ -4,21 +4,32 @@ $(() => {
     init();
 
     function init() {
-        hideAllContainers();
-        showSelectGroup();
+        showSetNameContainer();
     }
 
     $("#create-group").click(() => {
         console.log("clicked create group")
 
-        socket = io();
-        showSetNameContainer();
+        createNewRoom();
     });
 
     $("#join-group").click(() => {
         console.log("clicked join group")
 
-        showSetNameContainer();
+        showSetPinContainer();
+    });
+
+    $("#submit-pin").click(() => {
+        console.log("clicked submit pin")
+
+        // Get the pin the user gave in the input field
+        let roomPin = $("#set-pin-input").val().trim().toString();
+        if (roomPin) {
+            joinRoom(roomPin);
+        } else {
+            // If no name is put in the input
+            document.getElementById("set-pin-input").classList.add('error-border')
+        }
     });
 
     $("#submit-name").click(() => {
@@ -27,7 +38,9 @@ $(() => {
         const name = $("#set-name-input").val().trim();
         if (name) {
             setUserName(name);
-            showMainContent();
+        } else {
+            // If no name is put in the input
+            document.getElementById("set-name-input").classList.add('error-border')
         }
     });
 
@@ -35,6 +48,7 @@ $(() => {
         console.log("clicked leave group")
 
         leaveGroup();
+        showSetNameContainer();
     });
 
     // Search for song via search input field
@@ -54,14 +68,105 @@ $(() => {
         }
     });
 
+    $("#back-button-set-username").on("click", function () {
+        showSetNameContainer();
+    });
+
+    $("#back-button-select-group").on("click", function () {
+        showSelectGroup();
+    });
+
+    function setUserName(name) {
+        if (name) {
+            // If the user is not connected
+            if (!socket.connected) {
+                console.log("user reconnected!")
+                socket.connect();
+            }
+
+            console.log("set username", name);
+            socket.emit('set username', name, (response) => {
+                console.log("response", response);
+
+                if (response) {
+                    document.getElementById("set-name-input").value = ''
+                    document.getElementById("set-name-input").classList.remove('error-border')
+                    showSelectGroup();
+                } else {
+                    document.getElementById("set-name-input").classList.add('error-border')
+                }
+            });
+        }
+    }
+
+    function createNewRoom() {
+        try {
+            socket.emit('create room', (response) => {
+                // The response is the pin
+                if (response) {
+                    console.log('pin', response);
+
+                    document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${response}</b>`
+
+                    showMainContent();
+                } else {
+                    console.log("Couldn't set pin")
+                }
+            });
+        } catch (e) {
+            console.log("something went wrong", e)
+        }
+    }
+
+    function joinRoom(roomPin) {
+        try {
+            if (roomPin) {
+                console.log("pin emit", roomPin)
+                socket.emit('join room', roomPin, (response) => {
+                    console.log('response', response);
+
+                    // The response is the pin
+                    if (response) {
+                        document.getElementById("set-pin-input").value = ''
+                        document.getElementById("set-pin-input").classList.remove('error-border')
+
+                        document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${response}</b>`
+
+                        showMainContent();
+                    } else {
+                        document.getElementById("set-pin-input").classList.add('error-border')
+                    }
+                });
+            }
+        } catch (e) {
+            console.log("something went wrong", e)
+        }
+    }
+
+    // On track results response
     socket.on('track results', function (songs) {
         const songListHtml = generateSongListHtml(songs)
 
         appendSongsHtml(songListHtml)
     });
 
+    // On user entering room
+    socket.on('new user', function (userNameList) {
+        console.log("New user", userNameList)
+
+        if (Array.isArray(userNameList) && userNameList.length) {
+            let peopleListHTML = '';
+
+            userNameList.forEach(userName =>
+                peopleListHTML = peopleListHTML + `<p class="person">${userName}</p>`
+            )
+
+            document.getElementById("people-list-container").innerHTML = peopleListHTML;
+        }
+    });
+
     function appendSongsHtml(songsHtml) {
-        $('#songs-container').html(songsHtml);
+        document.getElementById("songs-container").innerHTML = songsHtml
     }
 
     function generateSongListHtml(songs) {
@@ -74,7 +179,7 @@ $(() => {
             const songAlbumCover = song.album || "/icons/account_box-24px.svg";
             const songDuration = song.duration_ms || "";
 
-            html += `<div class="song-item">
+            html += `<a class="song-item">
                            <img class="song-album-cover" 
                            src=${songAlbumCover}>
                             <div class="song-info-container">
@@ -84,15 +189,32 @@ $(() => {
                                     <p class="song-listens">${songDuration}</p>
                                 </div>
                             </div>
-                        </div>`
+                        </a>`
         }
 
         return html
     }
 
+    // function addSongRequest(songTitle, songAlbumCover, songDuration) {
+    //     console.log("addSongRequest", songTitle, songAlbumCover, songDuration)
+    // }
+
+    let elementsArray = document.querySelectorAll("#songs-container");
+
+    elementsArray.forEach(function (elem) {
+        elem.addEventListener("click", function () {
+            console.log("click", elem)
+        });
+    });
+
     function showSelectGroup() {
         hideAllContainers();
         $("#group-buttons-container").css("display", "block");
+    }
+
+    function showSetPinContainer() {
+        hideAllContainers();
+        $("#enter-pin-container").css("display", "block");
     }
 
     function showSetNameContainer() {
@@ -107,15 +229,13 @@ $(() => {
 
     function hideAllContainers() {
         $("#group-buttons-container").css("display", "none");
+        $("#enter-pin-container").css("display", "none");
         $("#enter-name-container").css("display", "none");
         $("#main-content-container").css("display", "none");
     }
 
-    function setUserName(name) {
-        console.log("set username", name)
-    }
-
     function leaveGroup() {
         console.log("leave group");
+        socket.disconnect();
     }
 });

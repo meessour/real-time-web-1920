@@ -14,9 +14,9 @@ body {
     /* fallback for old browsers */
     background: #283c86;
     /* Chrome 10-25, Safari 5.1-6 */
-    background: -webkit-linear-gradient(90deg, #38efa6, #155799);
+    background: -webkit-linear-gradient(135deg, #0F2027, #203A43, #2C5364);
     /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-    background: linear-gradient(0deg, #38efa6, #155799);
+    background: linear-gradient(315deg, #0F2027, #203A43, #2C5364);
     width: 100%;
     background-position: center;
     background-repeat: no-repeat;
@@ -55,6 +55,7 @@ input {
 }
 
 #group-buttons-container,
+#enter-pin-container,
 #enter-name-container,
 #group-info-container,
 #people-list-container,
@@ -66,11 +67,8 @@ input {
     flex-wrap: wrap;
 }
 
-#join-group,
-#create-group,
-#submit-name,
-#leave-group,
-.person {
+.regular-button,
+.back-button {
     padding: 4px 8px;
 
     background-color: var(--sky);
@@ -80,19 +78,26 @@ input {
     border-radius: 8px;
 }
 
-#create-group:hover,
-#join-group:hover,
-#submit-name:hover,
-#leave-group:hover {
+.back-button {
+    background-color: transparent;
+    color: var(--sky);
+}
+
+.regular-button:hover,
+.back-button:hover {
     cursor: pointer;
 }
 
-#join-group {
-    margin-left: 24px;
+/* Spacing between buttons */
+#set-name-input,
+#create-group,
+#set-pin-input {
+    margin: 0 24px;
 }
 
 #search-song-input,
-#set-name-input {
+#set-name-input,
+#set-pin-input {
     padding: 12px 20px;
     display: inline-block;
     border: 1px solid #ccc;
@@ -107,15 +112,17 @@ input {
     padding: 8px 12px;
 }
 
+#set-pin-input {
+    width: 120px;
+    padding: 8px 12px;
+}
+
 #playlist-maker-container {
     flex-direction: row;
     margin-top: 24px;
     flex-wrap: nowrap;
 }
 
-#submit-name {
-    margin-left: 24px;
-}
 
 #group-info-container {
     justify-content: space-between;
@@ -127,6 +134,8 @@ input {
 }
 
 #people-list-container {
+    min-height: 29px;
+
     border: 1px solid var(--sky);
     border-radius: 8px;
     padding: 8px 0;
@@ -148,10 +157,14 @@ input {
 }
 
 .person {
+    padding: 4px 8px;
+    margin: 0 0 0 8px;
+
+    border: 1px solid var(--sky);
+    border-radius: 8px;
+
     background-color: transparent;
     color: var(--sky);
-    margin: 0;
-    margin-left: 8px;
 }
 
 #search-container, #playlist-container {
@@ -167,9 +180,9 @@ input {
 }
 
 #playlist-container {
-    width: 62%;
-    max-width: 62%;
-    min-width: 62%;
+    width: 63%;
+    max-width: 63%;
+    min-width: 63%;
 }
 
 #songs-container {
@@ -190,4 +203,8 @@ input {
     overflow: hidden;
     width: calc(100% - 24px);
     white-space: nowrap;
+}
+
+.error-border {
+    box-shadow: 0 0 0 4px red;
 }
