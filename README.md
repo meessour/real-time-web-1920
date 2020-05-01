@@ -1,10 +1,12 @@
 # Spotify Collaborative Playlist Maker
 
-With this app you can work together with friends to create a playlist together. Once someone makes a request to add a certain track to the playlist, a vote for that song is made. People are able to accept or decline the addition of the track in the playlist. If the majority said yes, then the song is added. This app makes use of Spotify's services like their API.
+In week 1 of this school project I made as seperate project (safe space chat). [Click here](https://github.com/meessour/safe-space-chat) to view this repo/project.
+
+With this collaborative playlist maker you can work together with friends to create a playlist together. Once someone makes a request to add a certain track to the playlist, a vote for that song is made. People are able to accept or decline the addition of the track in the playlist. If the majority said yes, then the song is added. This app makes use of Spotify's services like their API.
 
 ## Demo's
 
-[Live Demo]()
+[Live Demo](https://collaborative-playlist-maker.herokuapp.com/)
 
 ## Table of Contents
 1. [How to install](#How-to-install)
