@@ -1,14 +1,21 @@
 const fetch = require("node-fetch");
+const baseUrl = "https://api.spotify.com/v1/";
 
 class Tracks {
     parseTracks(tracks) {
         const parsedTracks = [];
+
+        // If the item is not an array, put it in an array
+        if (!Array.isArray(tracks)){
+            tracks = [tracks]
+        }
 
         if (tracks) {
             for (let i = 0; i < tracks.length; i++) {
                 // Check if the album has an id
                 if (tracks[i] && tracks[i].id) {
                     parsedTracks.push({
+                        id: tracks[i].id,
                         name: tracks[i].name,
                         // Selects the lowest resolution album cover
                         album: tracks[i].album && tracks[i].album.images[0] ?
@@ -37,7 +44,6 @@ class Tracks {
         // Encode special charcter with "percent encoding"
         input = escape(input)
 
-        const baseUrl = "https://api.spotify.com/v1/";
         const requestType = "GET";
 
         // Search for tracks
@@ -65,6 +71,30 @@ class Tracks {
 
         if (responseJson && responseJson.tracks && responseJson.tracks.items && responseJson.tracks.total)
             return responseJson.tracks.items;
+
+        if (responseJson && responseJson.error)
+            throw responseJson.error.message;
+    }
+
+    async searchTrackById(token, trackId) {
+        const finalUrl = `${baseUrl}tracks/${trackId}`;
+
+        console.log("finalUrl", finalUrl)
+
+        const response = await fetch(finalUrl, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+
+        });
+
+        const responseJson = await response.json()
+
+        if (responseJson && responseJson.id)
+            return responseJson;
 
         if (responseJson && responseJson.error)
             throw responseJson.error.message;

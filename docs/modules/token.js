@@ -30,6 +30,8 @@ class Token {
     checkToken() {
         const currentTimeInSeconds = Date.now() / 1000;
 
+        console.log("current token valid for:", (this.timeOfExpiration - currentTimeInSeconds))
+
         // Checks if the token is still valid
         return this.token &&
             this.timeOfExpiration &&
@@ -53,6 +55,8 @@ class Token {
                 },
                 body: 'grant_type=client_credentials'
             });
+
+            console.log("New token fetched")
 
             return response.json();
         } catch (error) {

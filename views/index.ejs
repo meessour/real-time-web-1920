@@ -18,7 +18,7 @@
     <div id="enter-pin-container">
         <h1 class="title"><label for="set-pin-input">What is the room's pin?</label></h1>
         <a id="back-button-select-group" class="back-button">< Back</a>
-        <input id="set-pin-input" type="number" placeholder="Enter pin...">
+        <input id="set-pin-input" type="number" oninput="this.value=this.value.slice(0,6)" placeholder="Pin..." >
         <a id="submit-pin" class="regular-button">Submit</a>
     </div>
 

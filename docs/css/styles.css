@@ -33,6 +33,18 @@ input {
     font-family: Montserrat, Arial, sans-serif;
 }
 
+/* Hide arrows on number inputs on Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Hide arrows on number inputs on  Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
 .main-content {
     color: var(--white);
     width: 90%;
@@ -120,7 +132,7 @@ input {
 }
 
 #set-pin-input {
-    width: 120px;
+    width: 77px;
     padding: 8px 12px;
 }
 
@@ -148,12 +160,6 @@ input {
     padding: 8px 0;
     margin-top: 8px;
     justify-content: left;
-}
-
-#playlist-container {
-    border: 1px solid var(--sky);
-    border-radius: 8px;
-    padding: 8px 0;
 }
 
 #people-list-title {
@@ -187,9 +193,14 @@ input {
 }
 
 #playlist-container {
+    border: 1px solid var(--sky);
+    border-radius: 8px;
+
     width: 63%;
     max-width: 63%;
     min-width: 63%;
+
+    overflow-x: auto;
 }
 
 #songs-container {
