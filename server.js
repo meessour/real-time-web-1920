@@ -24,18 +24,18 @@ const groups = []
 //         id: '0',
 //         userName: 'name'
 //     }],
-//     // All songs with different types in playlist of group
-//     songs: [{
-//         // A song can be accepted or used for addition or deletion to playlist
-//         type: 'accepted | add | delete',
-//         // People who voted yes on the song
+//     // All tracks with different types in playlist of group
+//     tracks: [{
+//         // A track can be accepted or used for addition or deletion to playlist
+//         state: 'accepted | rejected | pending',
+//         // People who voted yes on the track
 //         votedYes: ['id'],
-//         // People who voted no on the song
+//         // People who voted no on the track
 //         votedNo: ['id'],
-//         // Song with songtitle, albumcover image url and duration
-//         song: {
+//         // track with tracktitle, albumcover image url and duration
+//         track: {
 //             id: '0'
-//             name: 'songName',
+//             name: 'trackName',
 //             album: 'url',
 //             duration: 0
 //         }
@@ -111,7 +111,7 @@ socketIo.on('connection', (socket) => {
         }
     });
 
-    socket.on('search song', function (input, response) {
+    socket.on('search track', function (input, response) {
         if (socket.userName && input !== undefined && input.length) {
             // Get or fetch a token
             Token.getToken().then(token => {
@@ -129,7 +129,7 @@ socketIo.on('connection', (socket) => {
         }
     });
 
-    socket.on('add song request', function (trackId, response) {
+    socket.on('add track request', function (trackId, response) {
         // Only proceed if user has set their userName and a trackId is present
         if (socket.userName && trackId !== undefined && trackId.length) {
             // Get or fetch a token
@@ -138,11 +138,13 @@ socketIo.on('connection', (socket) => {
                 return Tracks.searchTrackById(token, trackId)
             }).then(tracks => {
                 // Filter out unnecessary track data
-                const parsedTracks = Tracks.parseTracks(tracks);
+                const parsedTrack = Tracks.parseTracks(tracks);
+
+                const groupTrack = registerRequestTrack(parsedTrack)
 
                 // TODO: add track to pending
 
-                response(parsedTracks)
+                response(groupTrack)
             }).catch(error => {
                 console.log("something went wrong:", error);
                 response();
@@ -192,7 +194,7 @@ function createGroup(pin, userSocket) {
                 id: userSocket.id,
                 userName: userSocket.userName
             }],
-            songs: []
+            tracks: []
         }
 
         groups.push(newGroup)
@@ -256,4 +258,20 @@ function updateClientUsers(pin) {
 
     // broadcast to room that a new user has joined
     socketIo.sockets.in(pin).emit('new user', allUserNames);
+}
+
+function registerRequestTrack(track) {
+    if (Array.isArray(track))
+        track = track[0]
+
+    groupTrack = {
+        state: 'pending',
+        votedYes: [],
+        votedNo: [],
+        track: track
+    }
+
+    groups.push(groupTrack)
+
+    return groupTrack
 }

@@ -1,11 +1,10 @@
-.song-album-cover {
+.track-album-cover {
     width: auto;
     height: 100%;
     border-radius: 4px;
-    margin-right: 12px;
 }
 
-.song-listens-container {
+.track-listens-container {
     display: flex;
     height: 24px;
     align-items: center;
@@ -17,8 +16,8 @@
     margin: 0 8px 0 0;
 }
 
-.song-name,
-.song-listens {
+.track-name,
+.track-listens {
     margin: 0;
     color: var(--black);
     text-overflow: ellipsis;
@@ -29,7 +28,7 @@
 }
 
 
-.song-listens {
+.track-listens {
     margin: 0;
     color: var(--black);
 }
@@ -47,8 +46,11 @@
     white-space: nowrap;
 }
 
-.song-info-container {
+.track-info-container {
     height: 100%;
+    width: fit-content;
+
+    margin: 0 12px;
 
     display: flex;
     justify-content: space-between;
@@ -57,6 +59,49 @@
     overflow: hidden;
 }
 
-.song-listens-icon {
+.track-listens-icon {
     margin-right: 4px;
+}
+
+.track-state-container {
+    width: fit-content;
+
+    white-space: nowrap;
+
+    background-color: var(--dark);
+    border-radius: 8px;
+
+    display: flex;
+    flex-direction: column;
+
+    margin-left: auto;
+    margin-right: 0;
+}
+
+.vote-container {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.vote-no, .vote-yes {
+    padding: 4px 8px;
+    flex: 1;
+}
+
+.vote-yes {
+    background-color: darkseagreen;
+    border-radius: 8px 0 0 0;
+}
+
+.vote-no {
+    background-color: indianred;
+    border-radius: 0 8px 0 0;
+}
+
+.total-container {
+    width: initial;
+    margin: 4px 6px;
 }

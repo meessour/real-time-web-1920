@@ -2,7 +2,7 @@
 
 In week 1 of this school project I made as seperate project (safe space chat). [Click here](https://github.com/meessour/safe-space-chat) to view this repo/project.
 
-With this collaborative playlist maker you can work together with friends to create a playlist together. Once someone makes a request to add a certain track to the playlist, a vote for that song is made. People are able to accept or decline the addition of the track in the playlist. If the majority said yes, then the song is added. This app makes use of Spotify's services like their API.
+With this collaborative playlist maker you can work together with friends to create a playlist together. Once someone makes a request to add a certain track to the playlist, a vote for that track is made. People are able to accept or decline the addition of the track in the playlist. If the majority said yes, then the track is added. This app makes use of Spotify's services like their API.
 
 ## Demo's
 
@@ -46,7 +46,7 @@ npm start
 ![Image](docs/img/final-app-readme/dataflow.png)
 
 ## How does it work?
-A user creates a room or joins a room. Once the room is created a pin is make in order for other's to join. When people choose to join a group, then they are required to enter this pin. Once in a room, a user can search by song titles in the search bar and choose from the result list.
+A user creates a room or joins a room. Once the room is created a pin is make in order for other's to join. When people choose to join a group, then they are required to enter this pin. Once in a room, a user can search by track titles in the search bar and choose from the result list.
 
 ## Wishlist
 * Being able to save playlist on Spotify
