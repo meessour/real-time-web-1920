@@ -88,7 +88,7 @@ $(() => {
 
             console.log("set username", name);
             socket.emit('set username', name, (response) => {
-                console.log("response", response);
+                console.log("response setUserName", response);
 
                 if (response) {
                     document.getElementById("set-name-input").value = ''
@@ -127,15 +127,15 @@ $(() => {
                 checkIfSocketConnected();
                 console.log("pin emit", roomPin)
                 socket.emit('join room', roomPin, (response) => {
-                    console.log('response', response);
+                    console.log('response joinRoom', response);
+                    const pin = response.roomPin
+                    const tracks = response.tracks
 
-                    // The response is the pin
-                    if (response) {
-                        document.getElementById("set-pin-input").value = ''
-                        document.getElementById("set-pin-input").classList.remove('error-border')
+                    if (pin) {
+                        if (tracks && Array.isArray(tracks) && tracks.length)
+                            setTracks(tracks)
 
-                        document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${response}</b>`
-
+                        setPin(pin);
                         showMainContent();
                     } else {
                         document.getElementById("set-pin-input").classList.add('error-border')
@@ -145,6 +145,21 @@ $(() => {
         } catch (e) {
             console.log("something went wrong", e)
         }
+    }
+
+    function setPin(pin) {
+        document.getElementById("set-pin-input").value = ''
+        document.getElementById("set-pin-input").classList.remove('error-border')
+
+        document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${pin}</b>`
+    }
+
+    function setTracks(tracks) {
+        const playlistHtml = generatePlaylistHtml(tracks)
+
+        console.log(tracks, playlistHtml.length)
+
+        document.getElementById("playlist-container").innerHTML = playlistHtml;
     }
 
     // Checks if the socket is connected
@@ -228,6 +243,16 @@ $(() => {
         }
 
         return html
+    }
+
+    function generatePlaylistHtml(tracks) {
+        let playlistHtml = '';
+
+        for (const track of tracks) {
+            playlistHtml += generatePlaylistTrackHtml(track);
+        }
+
+        return playlistHtml
     }
 
     function generatePlaylistTrackHtml(track) {

@@ -14,8 +14,16 @@ const app = express();
 const http = require('http').Server(app);
 const socketIo = require('socket.io')(http);
 
+const MongoClient = require('mongodb').MongoClient;
+const uri = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/test?retryWrites=true&w=majority`;
+const client = new MongoClient(uri, {useNewUrlParser: true});
+let mongoDBClient;
+checkDBConnection();
+
 // All the groups
-const groups = []
+socketIo.groups = []
+
+console.log("socketIo.groups", socketIo.groups)
 // Below here is what a group consists of
 // {
 //     pin: '00000',
@@ -69,6 +77,7 @@ socketIo.on('connection', (socket) => {
     console.log("Connection!", socket.id)
     console.log("all rooms the socket is in:", Object.keys(socket.adapter.rooms));
 
+
     socket.on('set username', function (name, response) {
         console.log("set user name");
 
@@ -82,11 +91,11 @@ socketIo.on('connection', (socket) => {
         }
     });
 
-    socket.on('create room', function (response) {
+    socket.on('create room', async function (response) {
         // Check if user is already in a group
         if (Object.keys(socket.adapter.rooms).length === 0 && socket.userName) {
             const pin = generatePin();
-            if (createGroup(pin, socket)) {
+            if (await createGroup(pin, socket)) {
                 response(pin)
             } else {
                 response()
@@ -99,11 +108,16 @@ socketIo.on('connection', (socket) => {
     });
 
     socket.on('join room', function (roomPin, response) {
-        if (groups.find(group => group.pin === roomPin)) {
+        console.log("groups", socketIo.groups)
+        if (socketIo.groups.find(group => group.pin === roomPin)) {
             if (joinGroup(roomPin, socket)) {
-                response(roomPin)
+                const tracks = getTracksById(roomPin);
+
+                console.log('join room tracks', tracks)
+
+                response(roomPin, tracks);
             } else {
-                response()
+                response();
             }
         } else {
             console.log("no room with that pin found")
@@ -169,6 +183,47 @@ socketIo.on('connection', (socket) => {
     });
 });
 
+async function mongoAddNew(pin, userSocket) {
+    if (!checkDBConnection())
+        throw "NOOOO!"
+
+    const newGroup = {
+        pin: pin,
+        users: [{
+            id: userSocket.id,
+            userName: userSocket.userName
+        }],
+        tracks: []
+    }
+
+    console.log("______________")
+
+    mongoDBClient.insertOne(newGroup, function (err, res) {
+        if (err) throw err;
+        console.log("1 document inserted");
+
+        return true
+    });
+
+}
+
+async function checkDBConnection() {
+    if (mongoDBClient)
+        return mongoDBClient
+
+    await client.connect(function (err, db) {
+        if (err) throw err;
+
+        mongoDBClient = db.db("PlaylistMakerDB").collection("PlaylistGroups")
+
+        console.log("success connect!")
+
+        return mongoDBClient
+    });
+
+    return undefined
+}
+
 function generatePin() {
     let pin
 
@@ -177,16 +232,24 @@ function generatePin() {
         console.log("Generated pin:", pin)
     }
         // Check if pin doesn't exist already
-    while (groups.includes(pin))
+    while (socketIo.groups.includes(pin))
 
     // Push the new pin to the list of all pins
-    groups.push(pin)
+    socketIo.groups.push(pin)
     return pin
 }
 
-function createGroup(pin, userSocket) {
+async function createGroup(pin, userSocket) {
     try {
-        userSocket.join(pin)
+        if (await mongoAddNew(pin, userSocket)) {
+            userSocket.join(pin)
+
+            updateClientUsers(pin);
+
+            return true
+        } else {
+            return false
+        }
 
         const newGroup = {
             pin: pin,
@@ -197,9 +260,7 @@ function createGroup(pin, userSocket) {
             tracks: []
         }
 
-        groups.push(newGroup)
-
-        updateClientUsers(pin);
+        socketIo.groups.push(newGroup)
 
         return true
     } catch (e) {
@@ -212,7 +273,7 @@ function joinGroup(pin, userSocket) {
     try {
         userSocket.join(pin);
 
-        groups.find(group => group.pin === pin).users.push({
+        socketIo.groups.find(group => group.pin === pin).users.push({
             id: userSocket.id,
             userName: userSocket.userName
         })
@@ -226,18 +287,26 @@ function joinGroup(pin, userSocket) {
     }
 }
 
+function getTracksById(roomPin) {
+    const groupDetails = socketIo.groups.find(group => group.pin === roomPin)
+
+    console.log("groupDetails", groupDetails)
+
+    return groupDetails && groupDetails.tracks ? groupDetails.tracks : undefined;
+}
+
 function leaveGroup(pin, userSocketId) {
     try {
         // Find the index of the group in the groupslist where the user was in
-        const indexOfGroup = groups.findIndex(group => group.pin === pin)
+        const indexOfGroup = socketIo.groups.findIndex(group => group.pin === pin)
         console.log("indexOfGroup", indexOfGroup)
 
         // Find the index of the user in the userlist
-        const indexOfUserInUserList = groups[indexOfGroup].users.findIndex(user => user.id === userSocketId)
+        const indexOfUserInUserList = socketIo.groups[indexOfGroup].users.findIndex(user => user.id === userSocketId)
         console.log("indexOfUserInUserList", indexOfUserInUserList)
 
         // Remove the disconnecting user from the group's list of users he/she was in
-        groups[indexOfGroup].users.splice(indexOfUserInUserList, 1)
+        socketIo.groups[indexOfGroup].users.splice(indexOfUserInUserList, 1)
 
         updateClientUsers(pin)
     } catch (e) {
@@ -247,7 +316,7 @@ function leaveGroup(pin, userSocketId) {
 }
 
 function updateClientUsers(pin) {
-    const allUsersInGroups = groups.find(group => group.pin === pin).users;
+    const allUsersInGroups = socketIo.groups.find(group => group.pin === pin).users;
 
     console.log("allUsersInGroups", allUsersInGroups)
 
@@ -264,14 +333,17 @@ function registerRequestTrack(track) {
     if (Array.isArray(track))
         track = track[0]
 
-    groupTrack = {
+    console.log("track:", track)
+
+    const groupTrack = {
         state: 'pending',
         votedYes: [],
         votedNo: [],
         track: track
     }
 
-    groups.push(groupTrack)
+    // Add track info
+    socketIo.groups.push(groupTrack)
 
     return groupTrack
 }

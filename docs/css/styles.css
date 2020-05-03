@@ -233,7 +233,7 @@ input[type=number] {
 }
 
 .playlist-item {
-    width: calc(100% - 28px);
+    width: calc(100% - 27px);
     padding: 8px;
     margin: 6px;
     border-radius: 4px;
