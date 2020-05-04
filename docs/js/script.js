@@ -1,8 +1,8 @@
 $(() => {
     let socket = io();
 
-    // init();
-    initDev();
+    init();
+    // initDev();
 
     function init() {
         showSetNameContainer();
