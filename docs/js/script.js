@@ -62,6 +62,8 @@ $(() => {
     $("#search-track-input").on("input", function () {
         const input = $("#search-track-input").val();
 
+        console.log("Search song:", input)
+
         // Check if input is not empty and user is online
         if (input && input.trim()) {
             searchTracks(input)
@@ -320,7 +322,7 @@ $(() => {
         console.log("Request track add", trackId)
         socket.emit('add track request', trackId, (response) => {
             if (response) {
-                console.log("Request succesful added!", response)
+                console.log("Request successful added!", response)
 
                 const playlistTracksHtml = generatePlaylistTrackHtml(response)
                 appendHtmlToElement(document.getElementById("playlist-container"), playlistTracksHtml)
@@ -329,6 +331,17 @@ $(() => {
             }
         });
     }
+
+    // On user entering room
+    socket.on('update playlist', function (playlist) {
+        console.log("update playlist", playlist)
+
+        if (Array.isArray(playlist) && playlist.length) {
+            setTracks(playlist)
+        } else {
+            console.log("somethihnwent wrong in socket.on('update playlist',", "playlist was empty")
+        }
+    });
 
     function getCurrentPlaylistHTML() {
         return document.getElementById("playlist-container").innerHTML

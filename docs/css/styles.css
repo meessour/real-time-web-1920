@@ -96,7 +96,8 @@ input[type=number] {
 }
 
 .regular-button:hover,
-.back-button:hover {
+.back-button:hover,
+.track-item:hover {
     cursor: pointer;
 }
 
