@@ -69,7 +69,7 @@ npm start
 The largest dataset on the server can be seen down here. In the server smaller data objects are 'living' like the users and tracks, these are also found in this data model. Down here is an example of how a dataset may look for such a group.
 
 ```json
-{
+"group": {
   pin: '65423',
   users: [{
       id: 'BybLw-21zGw1oupMAAAB',

@@ -18,7 +18,7 @@ const MongoClient = require('mongodb').MongoClient;
 const uri = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@${process.env.MONGO_URL}/test?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, {useNewUrlParser: true});
 let mongoDBClient;
-checkDBConnection();
+// checkDBConnection();
 
 // All the groups
 const groups = []
