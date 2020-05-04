@@ -76,7 +76,6 @@ socketIo.on('connection', (socket) => {
     console.log("Connection!", socket.id)
     console.log("all rooms the socket is in:", socket.rooms);
 
-
     socket.on('set username', function (name, response) {
         console.log("set user name");
 
@@ -179,7 +178,6 @@ socketIo.on('connection', (socket) => {
 
         console.log("disconnecting", groupPinList, socketId)
         console.log(`${socket.id} (${socket.userName}) disconnected`);
-
 
         // Let the user leave every group he/she was in
         groupPinList.forEach(groupPin => leaveGroup(groupPin, socketId))

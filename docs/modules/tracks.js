@@ -53,9 +53,8 @@ class Tracks {
         const itemsToLoad = 5;
 
         const finalUrl = `${baseUrl}search?q=${input}&type=${searchType}&limit=${itemsToLoad}`;
-        const encodedFinalUrl = encodeURI(finalUrl);
 
-        console.log("encodedFinalUrl", finalUrl)
+        console.log("finalurl", finalUrl)
 
         const response = await fetch(finalUrl, {
             method: 'GET',
@@ -64,7 +63,6 @@ class Tracks {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-
         });
 
         const responseJson = await response.json()
@@ -88,7 +86,6 @@ class Tracks {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-
         });
 
         const responseJson = await response.json()
