@@ -1,15 +1,15 @@
 $(() => {
     let socket = io();
 
-    init();
     // initDev();
 
-    function init() {
-        showSetNameContainer();
-    }
-
     function initDev() {
-        socket.emit('set username', "temp", (response) => {
+        showSetNameContainer();
+        showSelectGroup()
+        showMainContent();
+        showSetPinContainer();
+
+        socket.emit('set username', "anonymous", (response) => {
             console.log("temp name set,", response)
         });
     }

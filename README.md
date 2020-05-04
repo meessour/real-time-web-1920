@@ -69,37 +69,39 @@ npm start
 The largest dataset on the server can be seen down here. In the server smaller data objects are 'living' like the users and tracks, these are also found in this data model. Down here is an example of how a dataset may look for such a group.
 
 ```json
-"group": {
-  pin: '65423',
-  users: [{
-      id: 'BybLw-21zGw1oupMAAAB',
-      userName: 'Naampje' 
-  }, {
-      id: 'Hsdkjn8-34978eijSDFj3',
-      userName: 'NogEenNaampje' 
-  }],
-  tracks: [{
-      state: 'pending',
-      votedYes: ['21zGw1oupMAAAB'],
-      votedNo: [],
-      track: {
-          id: '5yY9lUy8nbvjM1Uyo1Uqoc',
-          name: 'Life Is Good (feat. Drake)',
-          album: 'https://i.scdn.co/image/ab67616d000048518a01c7b77a34378a62f46402',
-          duration: '1830000'
-      }
-  },{
-      state: 'accepted',
-      votedYes: ['BybLw-21zGw1oupMAAAB', 'Hsdkjn8-34978eijSDFj3'],
-      votedNo: [],
-      track: {
-          id: '5dfkgjnDUy8nbvjM1sdf4',
-          name: 'Lucid Dreams',
-          album: 'https://i.scdn.co/image/ab67616d00004851f7db43292a6a99b21b51d5b4',
-          duration: '2140000'
-      }
+{
+  "pin": 65423,
+  "users": [{
+      "id": "BybLw-21zGw1oupMAAAB",
+      "userName": "Naampje" 
+   }, 
+   { 
+      "id": "Hsdkjn8-34978eijSDFj3",
+      "userName": "NogEenNaampje" 
    }],
-}]
+  "tracks": [{
+      "state": "pending",
+      "votedYes": ["21zGw1oupMAAAB"],
+      "votedNo": [],
+      "track": {
+          "id": "5yY9lUy8nbvjM1Uyo1Uqoc",
+          "name": "Life Is Good (feat. Drake)",
+          "album": "https://i.scdn.co/image/ab67616d000048518a01c7b77a34378a62f46402",
+          "duration": 1830000
+      }
+  },
+  {
+      "state": "accepted",
+      "votedYes": ["BybLw-21zGw1oupMAAAB", "Hsdkjn8-34978eijSDFj3"],
+      "votedNo": [],
+      "track": {
+          "id": "5dfkgjnDUy8nbvjM1sdf4",
+          "name": "Lucid Dreams",
+          "album": "https://i.scdn.co/image/ab67616d00004851f7db43292a6a99b21b51d5b4",
+          "duration": 2140000
+      }
+   }]
+}
 ```
 
 ## API

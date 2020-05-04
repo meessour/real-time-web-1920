@@ -314,6 +314,9 @@ function leaveGroup(pin, userSocketId) {
         const indexOfGroup = groups.findIndex(group => group.pin === pin)
         console.log("indexOfGroup", indexOfGroup)
 
+        if (indexOfGroup === -1)
+            throw "User is in no groups"
+
         // Find the index of the user in the userlist
         const indexOfUserInUserList = groups[indexOfGroup].users.findIndex(user => user.id === userSocketId)
         console.log("indexOfUserInUserList", indexOfUserInUserList)
