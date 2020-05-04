@@ -1,8 +1,8 @@
 $(() => {
     let socket = io();
 
-    init();
-    // initDev();
+    // init();
+    initDev();
 
     function init() {
         showSetNameContainer();
@@ -58,9 +58,11 @@ $(() => {
         showSetNameContainer();
     });
 
-    // Search for song via search input field
-    $("#search-song-input").on("input", function () {
-        const input = $("#search-song-input").val();
+    // Search for track via search input field
+    $("#search-track-input").on("input", function () {
+        const input = $("#search-track-input").val();
+
+        console.log("Search song:", input)
 
         // Check if input is not empty and user is online
         if (input && input.trim()) {
@@ -68,9 +70,9 @@ $(() => {
         } else {
             console.log("input was empty")
 
-            document.getElementById("search-song-input").classList.remove('error-border')
+            document.getElementById("search-track-input").classList.remove('error-border')
             // Clear search results list
-            changeInnerHTML(document.getElementById("songs-container"))
+            changeInnerHTML(document.getElementById("tracks-container"))
         }
     });
 
@@ -88,7 +90,7 @@ $(() => {
 
             console.log("set username", name);
             socket.emit('set username', name, (response) => {
-                console.log("response", response);
+                console.log("response setUserName", response);
 
                 if (response) {
                     document.getElementById("set-name-input").value = ''
@@ -127,15 +129,15 @@ $(() => {
                 checkIfSocketConnected();
                 console.log("pin emit", roomPin)
                 socket.emit('join room', roomPin, (response) => {
-                    console.log('response', response);
+                    console.log('response joinRoom', response);
+                    const pin = response.roomPin
+                    const tracks = response.tracks
 
-                    // The response is the pin
-                    if (response) {
-                        document.getElementById("set-pin-input").value = ''
-                        document.getElementById("set-pin-input").classList.remove('error-border')
+                    if (pin) {
+                        if (tracks && Array.isArray(tracks) && tracks.length)
+                            setTracks(tracks)
 
-                        document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${response}</b>`
-
+                        setPin(pin);
                         showMainContent();
                     } else {
                         document.getElementById("set-pin-input").classList.add('error-border')
@@ -145,6 +147,21 @@ $(() => {
         } catch (e) {
             console.log("something went wrong", e)
         }
+    }
+
+    function setPin(pin) {
+        document.getElementById("set-pin-input").value = ''
+        document.getElementById("set-pin-input").classList.remove('error-border')
+
+        document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${pin}</b>`
+    }
+
+    function setTracks(tracks) {
+        const playlistHtml = generatePlaylistHtml(tracks)
+
+        console.log(tracks, playlistHtml.length)
+
+        document.getElementById("playlist-container").innerHTML = playlistHtml;
     }
 
     // Checks if the socket is connected
@@ -159,23 +176,23 @@ $(() => {
 
     function searchTracks(input) {
         checkIfSocketConnected();
-        socket.emit('search song', input, (response) => {
-            // The response are the songs as object
+        socket.emit('search track', input, (response) => {
+            // The response are the tracks as object
             console.log("response", response);
 
             if (response) {
-                document.getElementById("search-song-input").classList.remove('error-border');
+                document.getElementById("search-track-input").classList.remove('error-border');
 
                 // Generate the HTML used to show the list
-                const songListHtml = generateSongListHtml(response, true);
+                const trackListHtml = generateTrackListHtml(response);
 
-                changeInnerHTML(document.getElementById("songs-container"), songListHtml);
-                setSongItemsListeners();
+                changeInnerHTML(document.getElementById("tracks-container"), trackListHtml);
+                setTrackItemsListeners();
             } else {
-                document.getElementById("search-song-input").classList.add('error-border');
+                document.getElementById("search-track-input").classList.add('error-border');
 
                 // Clear search results list
-                changeInnerHTML(document.getElementById("songs-container"));
+                changeInnerHTML(document.getElementById("tracks-container"));
             }
         });
     }
@@ -199,25 +216,29 @@ $(() => {
         element.innerHTML = html
     }
 
-    function generateSongListHtml(songs, isSearchResult, previousHtml = '') {
+    function appendHtmlToElement(element, html = '') {
+        element.insertAdjacentHTML('beforeEnd', html);
+    }
+
+    function generateTrackListHtml(tracks, previousHtml = '') {
         let html = previousHtml;
-        console.log("songs", songs);
-        for (let i = 0; i < songs.length; i++) {
-            const song = songs[i];
+        console.log("tracks", tracks);
+        for (let i = 0; i < tracks.length; i++) {
+            const track = tracks[i];
 
-            const songId = song.id || undefined;
-            const songName = song.name || "";
-            const songAlbumCover = song.album || "/icons/account_box-24px.svg";
-            const songDuration = song.duration_ms || "";
+            const trackId = track.id || undefined;
+            const trackName = track.name || "";
+            const trackAlbumCover = track.album || "/icons/account_box-24px.svg";
+            const trackDuration = track.duration_ms || "";
 
-            html += `<a id="${songId}" class="song-item">
-                           <img class="song-album-cover" 
-                           src=${songAlbumCover}>
-                            <div class="song-info-container">
-                                <h4 class="song-name">${songName}</h4>
-                                <div class="song-listens-container">
-                                    <img class="song-listens-icon" src="/icons/watch_later-black.svg">
-                                    <p class="song-listens">${songDuration}</p>
+            html += `<a id="${trackId}" class="track-item">
+                           <img class="track-album-cover" 
+                           src=${trackAlbumCover}>
+                            <div class="track-info-container">
+                                <h4 class="track-name">${trackName}</h4>
+                                <div class="track-listens-container">
+                                    <img class="track-listens-icon" src="/icons/watch_later-black.svg">
+                                    <p class="track-listens">${trackDuration}</p>
                                 </div>
                             </div>
                         </a>`
@@ -226,33 +247,101 @@ $(() => {
         return html
     }
 
-    function setSongItemsListeners() {
+    function generatePlaylistHtml(tracks) {
+        let playlistHtml = '';
+
+        for (const track of tracks) {
+            playlistHtml += generatePlaylistTrackHtml(track);
+        }
+
+        return playlistHtml
+    }
+
+    function generatePlaylistTrackHtml(track) {
+        const trackDetails = track.track;
+
+        console.log("track:", track)
+
+        const trackId = trackDetails.id || undefined;
+        const trackName = trackDetails.name || "";
+        const trackAlbumCover = trackDetails.album || "/icons/account_box-24px.svg";
+        const trackDuration = trackDetails.duration_ms || "";
+
+        const trackState = track.state || undefined;
+        const trackVoteYesCount = track.votedYes.length || undefined;
+        const trackVoteNoCount = track.votedNo.length || undefined;
+        const trackTotalPeople = trackVoteYesCount && trackVoteNoCount ?
+            (trackVoteYesCount + trackVoteNoCount) : undefined
+
+        console.log("trackVoteYesCount", track.votedYes)
+        let html = `<a id="${trackId}" class="playlist-item">
+                           <img class="track-album-cover" 
+                           src=${trackAlbumCover}>
+                            <div class="track-info-container">
+                                <h4 class="track-name">${trackName}</h4>
+                                <div class="track-listens-container">
+                                    <img class="track-listens-icon" src="/icons/watch_later-black.svg">
+                                    <p class="track-listens">${trackDuration}</p>
+                                </div>
+                            </div>
+                            `
+        // <!-- If the track has a state (like: accepted, declined, pending) -->
+        if (trackState === 'pending') {
+            html += `
+                            <div class="track-state-container">
+                                <div class="vote-container">
+                                    <div class="vote-yes">Yes (${trackVoteYesCount || "-"})</div>
+                                    <div class="vote-no">No (${trackVoteNoCount || "-"})</div>
+                                </div>
+                                <p class="total-container">
+                                ${trackTotalPeople || "-"} votes left
+                                </p>
+                            </div>
+                            `
+            html += `</a>`
+
+            return html
+        }
+    }
+
+    function setTrackItemsListeners() {
         // Sets an event listener for every track item in the search result container
-        document.getElementById("songs-container").querySelectorAll(".song-item").forEach(function (element) {
+        document.getElementById("tracks-container").querySelectorAll(".track-item").forEach(function (element) {
             element.addEventListener("click", function () {
                 // Check if the element has an id
                 if (element && element.id) {
-                    requestSongAdd(element.id)
+                    requestTrackAdd(element.id)
                 }
             });
         });
     }
 
-    function requestSongAdd(trackId) {
+    function requestTrackAdd(trackId) {
         trackId = trackId.toString()
 
-        console.log("Request song add", trackId)
-        socket.emit('add song request', trackId, (response) => {
+        console.log("Request track add", trackId)
+        socket.emit('add track request', trackId, (response) => {
             if (response) {
-                console.log("Request succesful added!")
-                const currentPlaylistHTML = getCurrentPlaylistHTML();
-                const playlistSongsHtml = generateSongListHtml(response, false, currentPlaylistHTML)
-                changeInnerHTML(document.getElementById("playlist-container"), playlistSongsHtml)
+                console.log("Request successful added!", response)
+
+                const playlistTracksHtml = generatePlaylistTrackHtml(response)
+                appendHtmlToElement(document.getElementById("playlist-container"), playlistTracksHtml)
             } else {
-                console.log("Something went wrong in requestSongAdd()")
+                console.log("Something went wrong in requestTrackAdd()")
             }
         });
     }
+
+    // On user entering room
+    socket.on('update playlist', function (playlist) {
+        console.log("update playlist", playlist)
+
+        if (Array.isArray(playlist) && playlist.length) {
+            setTracks(playlist)
+        } else {
+            console.log("somethihnwent wrong in socket.on('update playlist',", "playlist was empty")
+        }
+    });
 
     function getCurrentPlaylistHTML() {
         return document.getElementById("playlist-container").innerHTML

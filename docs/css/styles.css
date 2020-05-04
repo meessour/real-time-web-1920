@@ -96,7 +96,8 @@ input[type=number] {
 }
 
 .regular-button:hover,
-.back-button:hover {
+.back-button:hover,
+.track-item:hover {
     cursor: pointer;
 }
 
@@ -107,7 +108,7 @@ input[type=number] {
     margin: 0 24px;
 }
 
-#search-song-input,
+#search-track-input,
 #set-name-input,
 #set-pin-input {
     padding: 12px 20px;
@@ -119,7 +120,7 @@ input[type=number] {
     width: 100%;
 }
 
-#search-song-input:focus,
+#search-track-input:focus,
 #set-name-input:focus,
 #set-pin-input:focus {
     outline: none;
@@ -203,24 +204,40 @@ input[type=number] {
     overflow-x: auto;
 }
 
-#songs-container {
+#tracks-container {
     background-color: var(--sky);
     border-radius: 8px;
     margin-top: 8px;
     overflow: hidden;
 }
 
-.song-item {
-    text-decoration: none;
-    align-items: center;
-    display: flex;
+.track-item, .playlist-item {
+    width: calc(100% - 24px);
     height: 52px;
     max-height: 52px;
-    margin: 12px 8px 12px 12px;
+
+    padding: 12px 8px 12px 12px;
+
+    border-radius: 8px;
+
+    background-color: var(--sky);
+
+    display: flex;
+    flex-direction: row;
+
+    text-decoration: none;
+    align-items: center;
+
     text-overflow: ellipsis;
     overflow: hidden;
-    width: calc(100% - 24px);
     white-space: nowrap;
+}
+
+.playlist-item {
+    width: calc(100% - 27px);
+    padding: 8px;
+    margin: 6px;
+    border-radius: 4px;
 }
 
 .error-border {
