@@ -112,6 +112,8 @@ $(() => {
                     console.log('pin', response);
 
                     document.getElementById("group-id-text").innerHTML = `Group Pin: <b>${response}</b>`
+                    setTracks([])
+                    changeInnerHTML(document.getElementById("tracks-container"))
 
                     showMainContent();
                 } else {
@@ -138,6 +140,7 @@ $(() => {
                             setTracks(tracks)
 
                         setPin(pin);
+                        changeInnerHTML(document.getElementById("tracks-container"))
                         showMainContent();
                     } else {
                         document.getElementById("set-pin-input").classList.add('error-border')
