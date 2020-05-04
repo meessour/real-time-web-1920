@@ -86,7 +86,6 @@ class Tracks {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-
         });
 
         const responseJson = await response.json()

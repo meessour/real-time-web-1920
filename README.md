@@ -10,11 +10,20 @@ With this collaborative playlist maker you can work together with friends to cre
 
 ## Table of Contents
 1. [How to install](#How-to-install)
-2. [Data lifecycle](#Data-lifecycle)
-3. [Dataflow](#Dataflow)
-4. [API](#api)
-5. [Wishlist](#Wishlist)
-6. [License](#License)
+2. [Data lifecycle](#data-lifecycle)
+
+    2.1 [Events](#events)
+    
+    2.2 [Data Examples](#data-examples)
+3. [API](#api)
+
+    3.1 [App's usage of Spotify's API](#apps-usage-of-spotifys-api)
+4. [.env file](#env-file)
+5. [Endpoints](#endpoints)
+6. [Worth mentioning](#worth-mentioning)
+7. [Dependencies](#dependencies)
+8. [Wishlist](#wishlist)
+9. [License](#License)
 
 ## How to install
 **Step 1:** Clone project:
@@ -60,17 +69,17 @@ npm start
 The largest dataset on the server can be seen down here. In the server smaller data objects are 'living' like the users and tracks, these are also found in this data model. Down here is an example of how a dataset may look for such a group.
 
 ```json
-group: {
-  pin: 65423,
+{
+  pin: '65423',
   users: [{
-      id: BybLw-21zGw1oupMAAAB,
-      userName: Naampje 
+      id: 'BybLw-21zGw1oupMAAAB',
+      userName: 'Naampje' 
   }, {
-      id: Hsdkjn8-34978eijSDFj3,
-      userName: NogEenNaampje 
+      id: 'Hsdkjn8-34978eijSDFj3',
+      userName: 'NogEenNaampje' 
   }],
   tracks: [{
-      state: pending,
+      state: 'pending',
       votedYes: ['21zGw1oupMAAAB'],
       votedNo: [],
       track: {
@@ -80,7 +89,7 @@ group: {
           duration: '1830000'
       }
   },{
-      state: accepted,
+      state: 'accepted',
       votedYes: ['BybLw-21zGw1oupMAAAB', 'Hsdkjn8-34978eijSDFj3'],
       votedNo: [],
       track: {
@@ -102,7 +111,7 @@ In order to obtain resources, the generated token needs to be placed in the call
 
 The Spotify API has excellent documentaion and has no rate limits (with exceptions like making a lot of calls in a really short period of time). Almost every piece of data is at the deveoloper's finger tips which Spotify itself uses too. 
 
-## App's usage of Spotify's API
+### App's usage of Spotify's API
 This app makes use of Spotify's search engine, specifically searching for tracks. Here is how to app handles a search request from the user:
 
 Everytime an input event is made on the search input, and the value is not empty, the client emits the input to the server via sockets:
@@ -221,30 +230,90 @@ MONGO_URL = <mongoUrl>
     * '/tracks/<trackId>'
 
 ## Worth mentioning
-Minimal data between socket communication.
-Doesn't request new access-token every call.
-can connect to MongoDB collection.
-leaves default room as soon as user connects
-uses disconnecting... to orrectly remove user from group. When the socket is not connected, he/she is not shown in the userlist
-setTrackItemsListeners and identfy item by track-id
-node-fetch for spotofy communicatino
+Spotify returns loads of information about a track. Because new tracks are loaded everytime the user changes the input, a lot of communication between client-server-api is present. That's why the track's data is minified to only the id, title, albumcover and duration.
 
+The Token class makes sure to reuse an access-token if it is still valid. This way less calls are made to the spotify API.
+
+When the server starts, a connection is made to the mongo database. Then a global variable is set that points to the groups datamodel. This way it is very easy to read and understandable, like inserting a new entry: 
+```javascript
+mongoDBClient.insertOne(object, function(err, res) {
+   if (err) throw err;
+
+   console.log("1 document inserted");
+});
+```
+
+When the user suddenly loses connection or leaves, the server handles this correctly when this occures. By using `'disconnecting'` the socket's information (id, username) are still available. With this information the user is removed from the group it was in and updates the userlist for all other group members (the function `leaveGroup` handles this).
+```javascript
+socket.on('disconnecting', function () {
+// Let the user leave every group he/she was in
+Object.keys(socket.rooms).forEach(groupPin => leaveGroup(groupPin, socketId))
+}
+```
+
+As soon as the user connects, he/she are kicked out of the default room (default room is names after their ID). This way the server can make sure the user is only in zero or one group at a time. 
+
+```javascript
+socketIo.on('connection', (socket) => {
+    socket.leaveAll();
+});
+```
+
+When the user clicks one of the songs from the search result list, the client needs to know what song was clicked. In order to identify the clicked song, the id is the track is set as the element's id. Everytime a new search result is shown, a onclick listener is set for every track-item using this function:
+```javascript
+function setTrackItemsListeners() {
+    // Sets an event listener for every track item in the search result container
+    document.getElementById("tracks-container").querySelectorAll(".track-item").forEach(function (element) {
+        element.addEventListener("click", function () {
+            // Check if the element has an id
+            if (element && element.id) {
+                requestTrackAdd(element.id)
+            }
+        });
+    });
+}
+```
+
+`setTrackItemsListeners()` iterates over all items in the search-container and adds a `addEventListener` to every item. After a click the `requestTrackAdd` function is called with the element's id. This is what a track-item element's root looks like:
+
+```html
+<a id="3Dv1eDb0MEgF93GpLXlucZ" class="track-item"></a>
+```
+
+In order to communbicate with the Spotiofy services, the app uses the `node-fetch` package. Here is an example of a call made using `node-fetch`:
+
+```javascript
+const response = await fetch(finalUrl, {
+    method: 'GET',
+    headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    },
+});
+```
+
+Once the reponse is returned it is parsed into a JSON object using: 
+
+```javascript
+const responseJson = response.json()
+```
 
 ## Dependencies
-body-parser
-dotenv
-ejs
-express
-node-fetch
-socket.io
+* body-parser
+* dotenv
+* ejs
+* express
+* node-fetch
+* socket.io
 
 ## Wishlist
-* Being able to vote yes/no on a track
-* Being able to delete tracks.
-* Remember users (using username and password. or the UUID node package)
-* Saving room/group/playlist on a database
-* Being able to save playlist on Spotify
-* Being able to listen to the song via the app
+- [ ] Being able to vote yes/no on a track
+- [ ] Being able to delete tracks.
+- [ ] Remember users (using username and password. or the UUID node package)
+- [ ] Saving room/group/playlist on a database
+- [ ] Being able to save playlist on Spotify
+- [ ] Being able to listen to the song via the app
 
 ## License
 This repository is licensed as [MIT](LICENSE) @ [Mees Sour](https://github.com/meessour).
