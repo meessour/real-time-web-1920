@@ -1,6 +1,9 @@
 $(() => {
     let socket = io();
 
+    // Keeps track of how many people are in the group
+    let allUsersInGroup;
+
     // initDev();
 
     function initDev() {
@@ -170,11 +173,17 @@ $(() => {
     }
 
     function setTracks(tracks) {
-        const playlistHtml = generatePlaylistHtml(tracks)
+        // Remove old items from playlist
+        changeInnerHTML(document.getElementById("playlist-container"))
 
-        console.log(tracks, playlistHtml.length)
+        for (const track of tracks) {
+            const playlistTrackHtml = generatePlaylistTrackHtml(track);
 
-        document.getElementById("playlist-container").innerHTML = playlistHtml;
+            appendHtmlToElement(document.getElementById("playlist-container"), playlistTrackHtml)
+
+            if (track.state === 'pending')
+                setVoteButtonsListeners(track.track.id)
+        }
     }
 
     // Checks if the socket is connected
@@ -215,6 +224,9 @@ $(() => {
         console.log("New user", userNameList)
 
         if (Array.isArray(userNameList) && userNameList.length) {
+            // Sets all the users in the group
+            allUsersInGroup = userNameList
+
             let peopleListHTML = '';
 
             userNameList.forEach(userName =>
@@ -260,61 +272,57 @@ $(() => {
         return html
     }
 
-    function generatePlaylistHtml(tracks) {
-        let playlistHtml = '';
-
-        for (const track of tracks) {
-            playlistHtml += generatePlaylistTrackHtml(track);
-        }
-
-        return playlistHtml
-    }
-
     function generatePlaylistTrackHtml(track) {
         const trackDetails = track.track;
 
         console.log("track:", track)
 
+        // General info about track
         const trackId = trackDetails.id || undefined;
         const trackName = trackDetails.name || "";
         const trackAlbumCover = trackDetails.album || "/icons/account_box-24px.svg";
         const trackDuration = trackDetails.duration_ms || "";
 
-        const trackState = track.state || undefined;
-        const trackVoteYesCount = track.votedYes.length || undefined;
-        const trackVoteNoCount = track.votedNo.length || undefined;
-        const trackTotalPeople = trackVoteYesCount && trackVoteNoCount ?
-            (trackVoteYesCount + trackVoteNoCount) : undefined
+        // The state in which the track is in
+        const trackState = track.state;
 
-        console.log("trackVoteYesCount", track.votedYes)
-        let html = `<a id="${trackId}" class="playlist-item">
-                           <img class="track-album-cover" 
-                           src=${trackAlbumCover}>
-                            <div class="track-info-container">
-                                <h4 class="track-name">${trackName}</h4>
-                                <div class="track-listens-container">
-                                    <img class="track-listens-icon" src="/icons/watch_later-black.svg">
-                                    <p class="track-listens">${trackDuration}</p>
-                                </div>
+        // The amount of votes
+        const trackVoteYesCount = track.votedYes.length || 0;
+        const trackVoteNoCount = track.votedNo.length || 0;
+        const totalVotesCast = (trackVoteYesCount + trackVoteNoCount) || 0;
+
+        // The total amount of votes left
+        const votesLeft = (allUsersInGroup.length - totalVotesCast) || 0
+
+        // A string displayed to the user to show how many votes have been cast
+        const trackVoteYesCountString = `Yes (<b>${trackVoteYesCount}</b>)`;
+        const trackVoteNoCountString = `No (<b>${trackVoteNoCount}</b>)`;
+        const votesLeftString = votesLeft.length === 1 ?
+            `<b>${votesLeft}</b> vote left` :
+            `<b>${votesLeft}</b> votes left`;
+
+        let html = `<div id="playlist:${trackId}" class="playlist-item">
+                        <img class="track-album-cover" src=${trackAlbumCover}>
+                        <div class="track-info-container">
+                            <h4 class="track-name">${trackName}</h4>
+                            <div class="track-listens-container">
+                                <img class="track-listens-icon" src="/icons/watch_later-black.svg">
+                                <p class="track-listens">${trackDuration}</p>
                             </div>
-                            `
-        // <!-- If the track has a state (like: accepted, declined, pending) -->
+                    </div>`
+
+        // <!-- Show voting window if pending -->
         if (trackState === 'pending') {
-            html += `
-                            <div class="track-state-container">
-                                <div class="vote-container">
-                                    <div class="vote-yes">Yes (${trackVoteYesCount || "-"})</div>
-                                    <div class="vote-no">No (${trackVoteNoCount || "-"})</div>
-                                </div>
-                                <p class="total-container">
-                                ${trackTotalPeople || "-"} votes left
-                                </p>
-                            </div>
-                            `
-            html += `</a>`
+            html += `<div class="track-state-container">
+                         <div class="vote-container">
+                             <a class="vote-yes">${trackVoteYesCountString}</a>
+                             <a class="vote-no">${trackVoteNoCountString}</a>
+                         </div>
+                         <p class="total-container">${votesLeftString}</p>
+                     </div>`}
 
-            return html
-        }
+        html += `</div>`
+        return html
     }
 
     function setTrackItemsListeners() {
@@ -329,18 +337,59 @@ $(() => {
         });
     }
 
+    function setVoteButtonsListeners(elementId) {
+        const playlistItemElement = document.getElementById('playlist:' + elementId)
+
+        if (!playlistItemElement)
+            return;
+
+        const voteContainerElement = playlistItemElement.querySelector(".track-state-container > .vote-container")
+
+        if (!voteContainerElement)
+            return;
+
+        voteContainerElement.querySelector(".vote-yes").addEventListener("click", function () {
+            voteYesOntrack(elementId);
+        });
+
+        voteContainerElement.querySelector(".vote-no").addEventListener("click", function () {
+            voteNoOntrack(elementId);
+        });
+    }
+
     function requestTrackAdd(trackId) {
         trackId = trackId.toString()
 
         console.log("Request track add", trackId)
         socket.emit('add track request', trackId, (response) => {
             if (response) {
-                console.log("Request successful added!", response)
+                voteYesOntrack(trackId)
+            }
+        });
+    }
 
-                const playlistTracksHtml = generatePlaylistTrackHtml(response)
-                appendHtmlToElement(document.getElementById("playlist-container"), playlistTracksHtml)
+    function voteYesOntrack(trackId) {
+        trackId = trackId.toString()
+
+        console.log("Vote yes", trackId)
+        socket.emit('track vote yes', trackId, (response) => {
+            if (response) {
+                console.log("Vote registered!", response)
             } else {
-                console.log("Something went wrong in requestTrackAdd()")
+                console.log("Vote (Yes) couldn't be registered")
+            }
+        });
+    }
+
+    function voteNoOntrack(trackId) {
+        trackId = trackId.toString()
+
+        console.log("Vote no", trackId)
+        socket.emit('track vote no', trackId, (response) => {
+            if (response) {
+                console.log("Vote registered!", response)
+            } else {
+                console.log("Vote (No) couldn't be registered")
             }
         });
     }
@@ -352,7 +401,7 @@ $(() => {
         if (Array.isArray(playlist) && playlist.length) {
             setTracks(playlist)
         } else {
-            console.log("somethihnwent wrong in socket.on('update playlist',", "playlist was empty")
+            console.log("something went wrong in socket.on('update playlist',", "playlist was empty")
         }
     });
 

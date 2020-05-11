@@ -97,7 +97,10 @@ input[type=number] {
 
 .regular-button:hover,
 .back-button:hover,
-.track-item:hover {
+.track-item:hover,
+.vote-yes:hover,
+.vote-no:hover
+{
     cursor: pointer;
 }
 

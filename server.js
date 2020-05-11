@@ -109,14 +109,14 @@ socketIo.on('connection', (socket) => {
     });
 
     socket.on('join room', function (roomPin, response) {
-        console.log("groups", groups)
         if (groups.find(group => group.pin === roomPin)) {
             if (joinGroup(roomPin, socket)) {
-                const tracks = getTracksByRoomPin(roomPin);
+                const tracks = getTracksOfGroup(roomPin);
 
                 console.log('join room tracks', tracks)
                 console.log("roomOfUser", Object.keys(socket.rooms))
 
+                updatePlaylistOfGroup(roomPin);
                 response({roomPin, tracks});
             } else {
                 response();
@@ -145,11 +145,9 @@ socketIo.on('connection', (socket) => {
         }
     });
 
-    socket.on('add track request', function (trackId) {
+    socket.on('add track request', function (trackId, response) {
         // Only proceed if user has set their userName and a trackId is present
-        if (socket.userName &&
-            trackId !== undefined &&
-            trackId.length) {
+        if (socket.userName && trackId !== undefined && trackId.length) {
             // Get or fetch a token
             Token.getToken().then(token => {
                 // Search for the tracks with the token and input
@@ -158,45 +156,129 @@ socketIo.on('connection', (socket) => {
                 // Filter out unnecessary track data
                 const parsedTrack = Tracks.parseTracks(tracks);
 
-                const roomsOfUser = Object.keys(socket.rooms);
-                const roomOfUser = roomsOfUser[0];
+                const roomOfUser = getRoomOfUser();
+                const allTrackData = getTrackData();
 
-                if (roomsOfUser.length !== 1 || !roomOfUser)
-                    throw "User is not in (only one) room"
-
-                const groupData = groups.find(group => group.pin === roomOfUser);
-
-                if (!groupData)
-                    throw "Couldn't find group info of user"
-
-                const tracksOfGroup = groupData.tracks;
-                
-                if (tracksOfGroup.find(trackData => trackData.track.id === trackId)) {
+                if (allTrackData.find(trackData => trackData.track.id === trackId)) {
                     console.log("Track is already in playlist", trackId)
                 } else {
                     registerRequestTrack(roomOfUser, parsedTrack);
-                    updatePlaylistOfGroup(roomOfUser);
+                    updatePlaylistOfGroup();
+                    response(true)
                 }
             }).catch(error => {
                 console.log("something went wrong in :socket.on('add track request')", error);
+                response()
             });
+        }
+    });
+
+    socket.on('track vote yes', function (trackId) {
+        try {
+            console.log("track vote yes", trackId)
+
+            // Only proceed if user has set their userName and a trackId is present
+            if (!socket.userName || !trackId)
+                throw "username or elementId is undefined in: track vote yes";
+
+            if (!registerVoteYes(trackId))
+                throw "Couldn't register vote YES";
+
+            updatePlaylistOfGroup();
+        } catch (e) {
+            console.log("something went wrong in :socket.on('track vote yes')", e);
+        }
+    });
+
+    socket.on('track vote no', function (trackId) {
+        try {
+            console.log("track vote no", trackId)
+
+            // Only proceed if user has set their userName and a trackId is present
+            if (!socket.userName || !trackId)
+                throw "username or elementId is undefined in: track vote no";
+
+            if (!registerVoteNo(trackId))
+                throw "Couldn't register vote NO";
+
+            updatePlaylistOfGroup();
+        } catch (e) {
+            console.log("something went wrong in :socket.on('track vote no')", e);
         }
     });
 
     socket.on('disconnecting', function () {
         // All rooms the user was/is in
-        const groupPinList = Object.keys(socket.rooms);
-        const socketId = socket.id
+        const roomPin = getRoomOfUser();
+        const socketId = socket.id;
 
-        console.log("disconnecting", groupPinList, socketId)
-        console.log(`${socket.id} (${socket.userName}) disconnected`);
+        console.log(`${socketId} (${socket.userName}) disconnected`);
 
         // Let the user leave every group he/she was in
-        groupPinList.forEach(groupPin => leaveGroup(groupPin, socketId))
+        leaveGroup(roomPin, socketId);
 
         // Reset the user's username
-        socket.userName = undefined
+        socket.userName = undefined;
+
+        updatePlaylistOfGroup(roomPin);
     });
+
+    function registerRequestTrack(pin, track) {
+        if (Array.isArray(track))
+            track = track[0]
+
+        const groupTrack = {
+            state: 'pending',
+            votedYes: [],
+            votedNo: [],
+            track: track
+        }
+
+        // Add the track to the group
+        groups.find(group => group.pin === pin).tracks.push(groupTrack)
+    }
+
+    function getTrackData() {
+        const roomPin = getRoomOfUser();
+
+        const groupData = groups.find(group => group.pin === roomPin);
+
+        if (!groupData)
+            throw "Couldn't find group info of user"
+
+        const trackData = groupData.tracks
+
+        if (!trackData)
+            throw "No tracks found"
+
+        return trackData
+    }
+
+    function getTracksOfGroup(roomPin) {
+        const groupDetails = groups.find(group => group.pin === roomPin)
+        if (groupDetails) {
+            const allTracks = groupDetails.tracks;
+            // Only return the not rejected tracks
+            const filteredTracks = allTracks.filter(track => track.state !== 'rejected');
+
+            return filteredTracks;
+        }
+    }
+
+    // function getTracksByRoomPin(roomPin) {
+    //     const groupDetails = groups.find(group => group.pin === roomPin)
+    //
+    //     return groupDetails && groupDetails.tracks ? groupDetails.tracks : undefined;
+    // }
+
+    function getRoomOfUser() {
+        const roomsOfUser = Object.keys(socket.rooms);
+
+        if (roomsOfUser.length === 1)
+            return roomsOfUser[0];
+
+        throw `User is not in (only one) room. actual amount: ${roomsOfUser.length}`
+    }
 
     async function createGroup(pin) {
         try {
@@ -247,6 +329,107 @@ socketIo.on('connection', (socket) => {
         } catch (e) {
             console.log("Something went wrong in createGroup()", e)
             return false
+        }
+    }
+
+    function registerVoteYes(trackId) {
+        const roomPin = getRoomOfUser();
+
+        if (canUserVote(trackId)) {
+            groups.find(group => group.pin === roomPin)
+                .tracks.find(track => track.track.id === trackId)
+                .votedYes.push(socket.id);
+
+            updateTrackState(trackId)
+
+            console.log("vote registered!")
+            return true;
+        }
+    }
+
+    function registerVoteNo(trackId) {
+        const roomPin = getRoomOfUser();
+
+        if (canUserVote(trackId)) {
+            groups.find(group => group.pin === roomPin)
+                .tracks.find(track => track.track.id === trackId)
+                .votedNo.push(socket.id);
+
+            updateTrackState(trackId)
+
+            console.log("vote registered!")
+            return true;
+        }
+    }
+
+    function canUserVote(trackId) {
+        const trackData = getTrackData();
+
+        const track = trackData.find(track => track.track.id === trackId);
+
+        if (!track)
+            throw "Track is not in group";
+
+        const allVotesYes = track.votedYes;
+        const allVotesNo = track.votedNo;
+
+        console.log("allVotesYes", allVotesYes)
+        console.log("allVotesNo", allVotesNo)
+
+        if (allVotesYes.includes(socket.id) || allVotesNo.includes(socket.id))
+            throw "User already voted for this song";
+
+        return true
+    }
+
+    function updateTrackState(trackId) {
+        const roomPin = getRoomOfUser();
+        const trackData = getTrackData();
+
+        // How much percent of votes for it to be accepted. 0.5 = 50%
+        const voteThresholdYes = 50;
+        // How much percent of votes for it to be rejected. 0.5 = 50%
+        const voteThresholdNo = 50;
+
+        const track = trackData.find(track => track.track.id === trackId);
+
+        if (!track)
+            throw "Track is not in group";
+
+        const allVotesYes = track.votedYes.length;
+        const allVotesNo = track.votedNo.length;
+
+        const allVotes = groups.find(group => group.pin === roomPin).users.length
+
+        console.log("percent yes: ", (allVotesYes / allVotes * 100))
+        console.log("percent no: ", (allVotesNo / allVotes * 100))
+        console.log("total votes given: ", (allVotesYes + allVotesNo))
+        console.log("total votes: ", allVotes)
+
+        // If more than half voted yes, add to playlist.
+        if ((allVotesYes / allVotes * 100) > voteThresholdYes) {
+            console.log("Track accepted")
+            groups.find(group => group.pin === roomPin)
+                .tracks.find(track => track.track.id === trackId)
+                .state = 'accepted';
+        }
+        // If more than half voted no, don't add to playlist. Also remove when votes amount are equal
+        else if ((allVotesNo / allVotes * 100) > voteThresholdNo || (allVotesYes + allVotesNo) === allVotes) {
+            console.log("Track rejected")
+            groups.find(group => group.pin === roomPin)
+                .tracks.find(track => track.track.id === trackId)
+                .state = 'rejected';
+        }
+    }
+
+    function updatePlaylistOfGroup(roomPin = getRoomOfUser()) {
+        const playlist = getTracksOfGroup(roomPin);
+
+        if (Array.isArray(playlist)) {
+            // broadcast playlist to room
+            socketIo.to(roomPin).emit('update playlist', playlist);
+        } else {
+            console.log("empty playlist returned in updatePlaylistOfGroup()")
         }
     }
 
@@ -310,17 +493,10 @@ function generatePin() {
     return pin
 }
 
-function getTracksByRoomPin(roomPin) {
-    const groupDetails = groups.find(group => group.pin === roomPin)
-
-    return groupDetails && groupDetails.tracks ? groupDetails.tracks : undefined;
-}
-
 function leaveGroup(pin, userSocketId) {
     try {
         // Find the index of the group in the groupslist where the user was in
         const indexOfGroup = groups.findIndex(group => group.pin === pin)
-        console.log("indexOfGroup", indexOfGroup)
 
         if (indexOfGroup === -1)
             throw "User is in no groups"
@@ -332,22 +508,35 @@ function leaveGroup(pin, userSocketId) {
         // Remove the disconnecting user from the group's list of users he/she was in
         groups[indexOfGroup].users.splice(indexOfUserInUserList, 1)
 
+        // removeVotes(pin, userSocketId)
+
         updateClientUsers(pin)
     } catch (e) {
         console.log("Couldnt leave the group", e)
     }
 }
 
-function updatePlaylistOfGroup(roomPin) {
-    const playlist = getTracksByRoomPin(roomPin)
 
-    if (Array.isArray(playlist) && playlist.length) {
-        // broadcast playlist to room
-        socketIo.to(roomPin).emit('update playlist', playlist);
-    } else {
-        throw "empty playlist returned in updatePlaylistOfGroup()"
-    }
-}
+// function removeVotes(pin, userSocketId) {
+//     const allTracks = groups.find(group => group.pin === pin).tracks;
+//
+//     for (let i = 0; i < allTracks.length; i++) {
+//         const voteYesIndex = allTracks[i].votedYes.findIndex(id => id === userSocketId);
+//         const voteNoIndex = allTracks[i].votedNo.findIndex(id => id === userSocketId);
+//
+//         if (voteYesIndex) {
+//             console.log("voteYesIndex splice", groups.find(group => group.pin === pin).tracks[i].votedYes)
+//             groups.find(group => group.pin === pin).tracks[i].votedYes.splice(voteYesIndex, 1)
+//             console.log("voteYesIndex after", groups.find(group => group.pin === pin).tracks[i].votedYes)
+//
+//         }
+//         if (voteNoIndex) {
+//             console.log("voteNoIndex splice", groups.find(group => group.pin === pin).tracks[i].votedNo)
+//             groups.find(group => group.pin === pin).tracks[i].votedNo.splice(voteNoIndex, 1)
+//             console.log("voteNoIndex after", groups.find(group => group.pin === pin).tracks[i].votedNo)
+//         }
+//     }
+// }
 
 function updateClientUsers(pin) {
     const allUsersInGroups = groups.find(group => group.pin === pin).users;
@@ -363,20 +552,6 @@ function updateClientUsers(pin) {
     socketIo.sockets.in(pin).emit('new user', allUserNames);
 }
 
-function registerRequestTrack(pin, track) {
-    if (Array.isArray(track))
-        track = track[0]
-
-    const groupTrack = {
-        state: 'pending',
-        votedYes: [],
-        votedNo: [],
-        track: track
-    }
-
-    // Add the track to the group
-    groups.find(group => group.pin === pin).tracks.push(groupTrack)
-}
 
 function registerVote(roomPin, userId) {
 
