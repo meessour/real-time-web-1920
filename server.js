@@ -147,7 +147,9 @@ socketIo.on('connection', (socket) => {
 
     socket.on('add track request', function (trackId) {
         // Only proceed if user has set their userName and a trackId is present
-        if (socket.userName && trackId !== undefined && trackId.length) {
+        if (socket.userName &&
+            trackId !== undefined &&
+            trackId.length) {
             // Get or fetch a token
             Token.getToken().then(token => {
                 // Search for the tracks with the token and input
@@ -156,15 +158,25 @@ socketIo.on('connection', (socket) => {
                 // Filter out unnecessary track data
                 const parsedTrack = Tracks.parseTracks(tracks);
 
-                const roomOfUser = Object.keys(socket.rooms)
+                const roomsOfUser = Object.keys(socket.rooms);
+                const roomOfUser = roomsOfUser[0];
 
-                console.log("roomOfUser", Object.keys(socket.rooms))
-
-                if (roomOfUser.length !== 1)
+                if (roomsOfUser.length !== 1 || !roomOfUser)
                     throw "User is not in (only one) room"
 
-                registerRequestTrack(roomOfUser[0], parsedTrack)
-                updatePlaylistOfGroup(roomOfUser[0])
+                const groupData = groups.find(group => group.pin === roomOfUser);
+
+                if (!groupData)
+                    throw "Couldn't find group info of user"
+
+                const tracksOfGroup = groupData.tracks;
+                
+                if (tracksOfGroup.find(trackData => trackData.track.id === trackId)) {
+                    console.log("Track is already in playlist", trackId)
+                } else {
+                    registerRequestTrack(roomOfUser, parsedTrack);
+                    updatePlaylistOfGroup(roomOfUser);
+                }
             }).catch(error => {
                 console.log("something went wrong in :socket.on('add track request')", error);
             });
@@ -299,11 +311,7 @@ function generatePin() {
 }
 
 function getTracksByRoomPin(roomPin) {
-    console.log("getTracksByRoomPin roomPin", roomPin)
-    console.log("getTracksByRoomPin groups", groups)
     const groupDetails = groups.find(group => group.pin === roomPin)
-
-    console.log("groupDetails", groupDetails)
 
     return groupDetails && groupDetails.tracks ? groupDetails.tracks : undefined;
 }
@@ -358,8 +366,6 @@ function updateClientUsers(pin) {
 function registerRequestTrack(pin, track) {
     if (Array.isArray(track))
         track = track[0]
-
-    console.log("track:", track)
 
     const groupTrack = {
         state: 'pending',

@@ -5,9 +5,9 @@ $(() => {
 
     function initDev() {
         showSetNameContainer();
-        showSelectGroup()
-        showMainContent();
         showSetPinContainer();
+        showSelectGroup();
+        showMainContent();
 
         socket.emit('set username', "anonymous", (response) => {
             console.log("temp name set,", response)
@@ -23,6 +23,7 @@ $(() => {
     $("#join-group").click(() => {
         console.log("clicked join group")
 
+        hideAllContainers();
         showSetPinContainer();
     });
 
@@ -55,6 +56,8 @@ $(() => {
         console.log("clicked leave group")
 
         leaveGroup();
+
+        hideAllContainers();
         showSetNameContainer();
     });
 
@@ -77,10 +80,12 @@ $(() => {
     });
 
     $("#back-button-set-username").on("click", function () {
+        hideAllContainers();
         showSetNameContainer();
     });
 
     $("#back-button-select-group").on("click", function () {
+        hideAllContainers();
         showSelectGroup();
     });
 
@@ -95,6 +100,8 @@ $(() => {
                 if (response) {
                     document.getElementById("set-name-input").value = ''
                     document.getElementById("set-name-input").classList.remove('error-border')
+
+                    hideAllContainers();
                     showSelectGroup();
                 } else {
                     document.getElementById("set-name-input").classList.add('error-border')
@@ -115,6 +122,7 @@ $(() => {
                     setTracks([])
                     changeInnerHTML(document.getElementById("tracks-container"))
 
+                    hideAllContainers();
                     showMainContent();
                 } else {
                     console.log("Couldn't set pin")
@@ -140,7 +148,9 @@ $(() => {
                             setTracks(tracks)
 
                         setPin(pin);
-                        changeInnerHTML(document.getElementById("tracks-container"))
+                        changeInnerHTML(document.getElementById("tracks-container"));
+
+                        hideAllContainers();
                         showMainContent();
                     } else {
                         document.getElementById("set-pin-input").classList.add('error-border')
@@ -351,22 +361,18 @@ $(() => {
     }
 
     function showSelectGroup() {
-        hideAllContainers();
         $("#group-buttons-container").css("display", "block");
     }
 
     function showSetPinContainer() {
-        hideAllContainers();
         $("#enter-pin-container").css("display", "block");
     }
 
     function showSetNameContainer() {
-        hideAllContainers();
         $("#enter-name-container").css("display", "block");
     }
 
     function showMainContent() {
-        hideAllContainers();
         $("#main-content-container").css("display", "block");
     }
 
